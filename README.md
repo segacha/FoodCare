@@ -1,4 +1,4 @@
-# app
+# FoodCare
 
 ## Project setup
 ```
