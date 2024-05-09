@@ -4,8 +4,10 @@
       <input id="newProduct"/>&nbsp;
       <button @click="addNewProduct">Add Product</button>
       <p v-for="product in products" :key="product._id">
-          <b>*{{ product.description }}</b>&nbsp;
+        <ul>
+          <li><b>{{ product.description }}</b>&nbsp;</li>
           <button @click="deleteProduct(product.id)">Delete Product</button>
+        </ul>
       </p>
   </div>
 </template>
