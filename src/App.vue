@@ -1,6 +1,23 @@
 <template>
-  <div>
-      <h2>{{ title }}</h2>
+    <div>
+        <header class="top-section">
+            <nav>
+                <ul>
+                    <li><a href="#">Inicio</a></li>
+                    <li><a href="#">Productos</a></li>
+                    <li><a href="#">Acerca de</a></li>
+                </ul>
+            </nav>
+            <div class="centered-content">
+                <div class="logo-title-container">
+                    <img class="logo" src="./assets/logo.png" alt="Logo de FoodCare">
+                    <h1>{{ title }}</h1>
+                </div>
+            </div>
+            <a href="#" class="account-button">Ingresar</a>
+        </header>
+    </div>
+    <main class="bottom-section">
       <input id="newProduct"/>&nbsp;
       <button @click="addNewProduct">Add Product</button>
       <p v-for="product in products" :key="product._id">
@@ -8,11 +25,12 @@
           <li><b>{{ product.description }}</b>&nbsp;</li>
           <button @click="deleteProduct(product.id)">Delete Product</button>
         </ul>
-      </p>
-  </div>
+        </p>
+    </main>
 </template>
 
 <script>
+import './styles/style.css';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 const API_URL = 'http://localhost:3000/';
