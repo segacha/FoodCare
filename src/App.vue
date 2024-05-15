@@ -3,9 +3,9 @@
         <header class="top-section">
             <nav>
                 <ul>
-                    <li><a href="#">Inicio</a></li>
-                    <li><a href="#">Productos</a></li>
-                    <li><a href="#">Acerca de</a></li>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">XYZ</a></li>
+                    <li><a href="#">About us</a></li>
                 </ul>
             </nav>
             <div class="centered-content">
@@ -14,7 +14,7 @@
                     <h1>{{ title }}</h1>
                 </div>
             </div>
-            <a href="#" class="account-button">Ingresar</a>
+            <a href="#" class="account-button">Log in</a>
         </header>
     </div>
     <main class="bottom-section">
