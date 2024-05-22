@@ -1,6 +1,5 @@
 <template>
     <div>
-      
         <header class="top-section">
             <nav>
                 <ul>
@@ -21,7 +20,6 @@
     <main class="bottom-section">
       <router-view></router-view> <!-- Placeholder for router views -->
     </main>
-  </div>
 </template>
 
 <script scoped>
