@@ -2,6 +2,7 @@ const express = require('express');
 const { MongoClient } = require("mongodb");
 const cors = require("cors");
 const multer = require("multer");
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -52,6 +53,10 @@ app.delete("/api/foodcare/DeleteProduct",(request, response)=> {
         id:request.query.id        
     })
     response.json("Delete Successful")
+});
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 
