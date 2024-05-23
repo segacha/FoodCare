@@ -1,38 +1,38 @@
 <template>
-  <!-- Link to external stylesheet for Font Awesome icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  <body>
+<body>
   <div class="container" id="container">
     <!-- Sign-up form container -->
     <div class="form-container sign-up">
-      <form>
+      <form @submit.prevent="register">
         <h1>Create Account</h1>
         <div class="social-icons">
-          <a href="#" class="icon"><i class="fa-brands fa-google"></i></a> <!-- Google icon -->
-          <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a> <!-- Facebook icon -->
-          <a href="#" class="icon"><i class="fa-brands fa-github"></i></a> <!-- GitHub icon -->
+          <a href="#" class="icon"><i class="fa-brands fa-google"></i></a>
+          <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" class="icon"><i class="fa-brands fa-github"></i></a>
         </div>
         <span>or use your email for registration</span>
-        <input type="text" placeholder="Name"> <!-- Input field for name -->
-        <input type="email" placeholder="Email"> <!-- Input field for email -->
-        <input type="password" placeholder="Password"> <!-- Input field for password -->
-        <button>SIGN UP</button> <!-- Sign-up button -->
+        <input type="text" placeholder="First Name" v-model="registerUser.firstname" required>
+        <input type="text" placeholder="Last Name" v-model="registerUser.lastname" required>
+        <input type="email" placeholder="Email" v-model="registerUser.email" required>
+        <input type="password" placeholder="Password" v-model="registerUser.password" required>
+        <button type="submit">SIGN UP</button>
       </form>
     </div>
     <!-- Sign-in form container -->
     <div class="form-container sign-in">
-      <form>
+      <form @submit.prevent="login">
         <h1>Sign In</h1>
         <div class="social-icons">
-          <a href="#" class="icon"><i class="fa-brands fa-google"></i></a> <!-- Google icon -->
-          <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a> <!-- Facebook icon -->
-          <a href="#" class="icon"><i class="fa-brands fa-github"></i></a> <!-- GitHub icon -->
+          <a href="#" class="icon"><i class="fa-brands fa-google"></i></a>
+          <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" class="icon"><i class="fa-brands fa-github"></i></a>
         </div>
         <span>or use your email and password</span>
-        <input type="email" placeholder="Email"> <!-- Input field for email -->
-        <input type="password" placeholder="Password"> <!-- Input field for password -->
-        <a href="#">Forget Your Password?</a> <!-- Link to forget password -->
-        <button>SIGN IN</button> <!-- Sign-in button -->
+        <input type="email" placeholder="Email" v-model="loginUser.email" required>
+        <input type="password" placeholder="Password" v-model="loginUser.password" required>
+        <a href="#">Forget Your Password?</a>
+        <button type="submit">SIGN IN</button>
       </form>
     </div>
     <!-- Toggle container for switching between sign-in and sign-up -->
@@ -41,12 +41,12 @@
         <div class="toggle-panel toggle-left">
           <h1>Welcome!</h1>
           <p>Enter your personal details and save some Food!</p>
-          <button class="hidden" id="login" @click="switchToLogin">SIGN IN</button> <!-- Switch to sign-in -->
+          <button class="hidden" id="login" @click="switchToLogin">SIGN IN</button>
         </div>
         <div class="toggle-panel toggle-right">
           <h1>Hello, Broksy!</h1>
           <p>Register with your personal details and start saving</p>
-          <button class="hidden" id="register" @click="switchToRegister">SIGN UP</button> <!-- Switch to sign-up -->
+          <button class="hidden" id="register" @click="switchToRegister">SIGN UP</button>
         </div>
       </div>
     </div>
@@ -55,20 +55,76 @@
 </template>
 
 <script>
+import axios from 'axios';
+
+axios.defaults.baseURL = 'http://localhost:3000/api';
+
 export default {
+  name: 'AuthPage',
+  data() {
+    return {
+      registerUser: {
+        firstname: '',
+        lastname: '',
+        email: '',
+        password: ''
+      },
+      loginUser: {
+        email: '',
+        password: ''
+      },
+      loading: false,
+      error: null
+    };
+  },
   methods: {
-    // Method to switch to login form
     switchToLogin() {
       const container = document.getElementById('container');
       container.classList.remove('active');
     },
-    // Method to switch to register form
     switchToRegister() {
       const container = document.getElementById('container');
       container.classList.add('active');
+    },
+    async register() {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await axios.post('/user/create', this.registerUser);
+        const data = response.data;
+        if (data.status) {
+          alert('User registered successfully');
+          this.switchToLogin(); // Switch to login form after successful registration
+        } else {
+          alert('Registration failed');
+        }
+      } catch (err) {
+        this.error = 'An error occurred while registering the user.';
+        console.error(err);
+      } finally {
+        this.loading = false;
+      }
+    },
+    async login() {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await axios.post('/user/login', this.loginUser);
+        const data = response.data;
+        if (data.status) {
+          alert('Login Successfully');
+          this.$router.push({ name: 'HomePage' });
+        } else {
+          alert('Login Failed');
+        }
+      } catch (err) {
+        console.error('Error during login:', err);
+        alert('Error, please try again');
+      } finally {
+        this.loading = false;
+      }
     }
   },
-  // Lifecycle hook called when the component is mounted
   mounted() {
     const registerBtn = document.getElementById('register');
     const loginBtn = document.getElementById('login');
@@ -76,8 +132,16 @@ export default {
     registerBtn.addEventListener('click', this.switchToRegister);
     loginBtn.addEventListener('click', this.switchToLogin);
   }
-}
+};
 </script>
+
+<style scoped>
+/* Añade tus estilos aquí */
+.form-control {
+  margin-bottom: 10px;
+}
+</style>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');

@@ -15,6 +15,8 @@ npm install cors --save
 npm install axios --save
 
 npm install router --save
+
+npm install simple-encryptor --save
 ```
 
 ### Compiles and hot-reloads for development
