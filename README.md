@@ -17,8 +17,10 @@ npm install axios --save
 npm install router --save
 
 npm install simple-encryptor --save
-```
 
+npm install nodemailer --save
+```
+5
 ### Compiles and hot-reloads for development
 ```
 npm run serve

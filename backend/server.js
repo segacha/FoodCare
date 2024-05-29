@@ -17,7 +17,7 @@ let products_will_expire = []
 
 mongoose.set("strictQuery", false);
 
-// Conectar a la base de datos
+// Connect to Database
 mongoose
   .connect(
     "mongodb+srv://foodcare:webtech2@foodcare.gygzrc9.mongodb.net/foodcaredb",
@@ -45,14 +45,14 @@ app.get("/", (req, res) =>
   res.send("Server is running");
 });
 
-// Manejo de errores
+// Error Handeling
 app.use((err, req, res, next) =>
 {
   console.error(err.stack);
   res.status(500).send("Something broke!");
 });
 
-// Iniciar el servidor
+//Start server
 app.listen(PORT, () =>
 {
   console.log(`Server is running on http://localhost:${PORT}`);
@@ -118,14 +118,13 @@ async function check_emails_to_send()
   //an email to the representitive user
 
   const users = await get_users();
-  emailjs.init("ct9l5Onl5LXMaeodb");
 
   users.forEach((user) =>
   {
     const products = user.products;
     let products_str = "";
     products.forEach((product) =>
-    {
+    {console.log(product)
       if (did_cross_expiring_limit(product))
       {
         products_will_expire.push(product);
@@ -217,7 +216,7 @@ async function daily_expiring_date_checks()
 }
 
 /*du kannst die unten methode */
-//daily_expiring_date_checks()
+daily_expiring_date_checks()
 
 
 //testing
@@ -340,11 +339,6 @@ app.post('/api/foodcare/add_product/:userId', async (req, res) =>
     //der user, damit wir das spaeter anrufen koennen
     user.products.push(new_product._id);
     await user.save();
-
-    res.json(new_product);
-    await database.collection("users").insertOne({
-      description: request.body.newProduct
-    });
 
     response.json(new_product);
   } catch (error)

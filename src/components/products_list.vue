@@ -43,7 +43,6 @@ export default {
       product_expiring_date: ""
     };
   },
-  //EINE METHODE "update_days_till_expiring_date()" MUSS GEMACHT WERDEN
   methods:
   {
 
