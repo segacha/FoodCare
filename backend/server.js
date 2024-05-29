@@ -12,7 +12,7 @@ const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = 3000;
-const EXPIRING_DATE_LIMIT = 10;
+const EXPIRING_DATE_LIMIT = 210;
 let products_will_expire = []
 
 mongoose.set("strictQuery", false);
@@ -124,7 +124,7 @@ async function check_emails_to_send()
     const products = user.products;
     let products_str = "";
     products.forEach((product) =>
-    {console.log(product)
+    {
       if (did_cross_expiring_limit(product))
       {
         products_will_expire.push(product);
@@ -139,12 +139,18 @@ async function check_emails_to_send()
       products_str += "Product Name: " + product_name + "\n";
       products_str += "Product Expiring Date: " + product_expiring_date + " which is " + days_till_expiring + " Days away!\n";
     });
+    console.log(products_will_expire.length)
+    
+    //this means, if the user has one (or more) products that will expire
+    //then we should send him an email!
+    if(products_will_expire.length >= 1)
+      {
+        send_email(user.lastname, user.email, products_str);
+      }
 
-    send_email(user.lastname, user.email, products_str);
     //clearing the array for the next user
     products_will_expire = [];
   });
-
 }
 
 async function send_email(user_name, user_email, user_products_list)
@@ -216,7 +222,7 @@ async function daily_expiring_date_checks()
 }
 
 /*du kannst die unten methode */
-daily_expiring_date_checks()
+//daily_expiring_date_checks()
 
 
 //testing
@@ -339,8 +345,7 @@ app.post('/api/foodcare/add_product/:userId', async (req, res) =>
     //der user, damit wir das spaeter anrufen koennen
     user.products.push(new_product._id);
     await user.save();
-
-    response.json(new_product);
+    res.json(new_product);
   } catch (error)
   {
     console.error("Error adding Product:", error);
