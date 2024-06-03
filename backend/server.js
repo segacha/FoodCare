@@ -216,7 +216,7 @@ async function daily_expiring_date_checks()
 }
 
 /*du kannst die unten methode */
-daily_expiring_date_checks()
+//daily_expiring_date_checks()
 
 
 //testing
