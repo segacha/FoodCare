@@ -139,4 +139,4 @@ app.post('/api/foodcare/add_product/:userId', async (req, res) =>
 });
 
 /*du kannst die unten methode auskommentieren wenn du den AMS an machen moechtest*/
-auto_mailing_system.daily_expiring_date_checks()
+auto_mailing_system.daily_expiring_date_checks();
