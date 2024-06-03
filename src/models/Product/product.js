@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 const product_schema = new mongoose.Schema({
     name: {type: String},
     description: {type: String},
-    expiring_date: {type: String}
+    expiring_date: {type: String},
+    num_of_received_emails: {type: Number, default: 0}
 });
 
 // Define the User model and export it

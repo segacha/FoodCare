@@ -4,17 +4,11 @@ const cors = require('cors');
 const User = require("../src/models/user/userModel.js");
 const Product = require("../src/models/Product/product.js");
 const routes = require('../src/router/routes');
-const axios = require('axios');
-//npm install nodemailer 
-const nodemailer = require('nodemailer');
-
+const auto_mailing_system = require("./auto_mailing_system.js");
 
 
 const app = express();
 const PORT = 3000;
-const EXPIRING_DATE_LIMIT = 10;
-let products_will_expire = []
-
 mongoose.set("strictQuery", false);
 
 // Connect to Database
@@ -323,7 +317,7 @@ app.post('/api/foodcare/add_product/:userId', async (req, res) =>
 
   try
   {
-    // Find the user by _id
+    //find the user by _id
     const user = await User.findById(userId).exec();
 
     if (!user)
@@ -339,8 +333,7 @@ app.post('/api/foodcare/add_product/:userId', async (req, res) =>
     //der user, damit wir das spaeter anrufen koennen
     user.products.push(new_product._id);
     await user.save();
-
-    response.json(new_product);
+    res.json(new_product);
   } catch (error)
   {
     console.error("Error adding Product:", error);
@@ -348,14 +341,5 @@ app.post('/api/foodcare/add_product/:userId', async (req, res) =>
   }
 });
 
-/* app.delete("/api/foodcare/delete_product", (request, response) =>
-{
-  database.collection("products").deleteOne({
-    id: request.query.id,
-  });
-  response.json("Delete Successful");
-});
-app.get("*", (req, res) =>
-{
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-}); */
+/*du kannst die unten methode auskommentieren wenn du den AMS an machen moechtest*/
+auto_mailing_system.daily_expiring_date_checks()
