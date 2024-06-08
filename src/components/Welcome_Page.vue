@@ -1,6 +1,4 @@
 <template>
-  <!--   <body>
- -->
   <header>
     <nav class="navbar">
       <div class="logo">
@@ -79,14 +77,6 @@ export default {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-  transition: all 0.3s ease;
-}
-
 /* body {
   height: 100vh;
   width: 100%;
@@ -134,13 +124,6 @@ header .navbar {
   font-size: 22px;
   color: #000;
   font-weight: 500;
-}
-
-.navbar .logo .logoimg {
-  height: 100px;
-  /* Ajusta la altura del logo según sea necesario */
-  margin-right: 10px;
-  /* Espacio entre el logo y el texto */
 }
 
 .navbar .menu li {

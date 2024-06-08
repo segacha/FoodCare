@@ -52,11 +52,11 @@ export default
 
 
 <template>
-  <!-- <main> -->
+
     <!-- <router-view></router-view> -->
     <div v-if="show_welcome_page" class="welcome_page">
       <Welcome_Page @login_register_clicked="toggle_login_page"></Welcome_Page>
-    </div>e
+    </div>
 
     <div v-if="show_login_page" class="login_page" >
       <!-- at the event of share_user in der login page, wir werden install_user methode aufrufen -->
@@ -67,7 +67,6 @@ export default
     <div v-if="show_home_page" class="home_page">
       <HomePage :user="user"></HomePage>
     </div>
-  <!-- </main> -->
 
 </template>
 
@@ -87,10 +86,8 @@ body {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  height: 100vh; /* Full viewport height */
-
-
 }
+
 
 </style>
 
