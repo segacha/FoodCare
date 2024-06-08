@@ -21,6 +21,14 @@ npm install simple-encryptor --save
 npm install nodemailer --save
 
 npm install ics --save
+
+npm install openai --save
+
+npm install fs --save
+
+npm install dotenv --save
+
+npm install prompt --save
 ```
 5
 ### Compiles and hot-reloads for development

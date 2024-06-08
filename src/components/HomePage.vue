@@ -26,13 +26,17 @@
           </section>
         </div>
         <div class="upload-button">
-          <input type="button" value="Upload Bill" @click="uploadBill"/>
+          <form @submit.prevent="uploadImage">
+          <input type="file" @change="onFileChange" />
+          <button type="submit">Upload Image</button>
+        </form>
+        <p v-if="message">{{ message }}</p>
         </div>
   </header>
-
 </template>
-
 <script>
+import { ref } from 'vue';
+import axios from 'axios';
 export default
   {
     name: "HomePage",
@@ -64,18 +68,44 @@ export default
     },
     setup()
     {
-      const title = ("Food Care"); // Reactive title data
+      const selectedFile = ref(null);  // Define selectedFile como ref
+    const message = ref('');         // Define message como ref para mostrar mensajes
 
-      const uploadBill = () => {
-        console.log("Upload Bill button clicked");
+    const onFileChange = (event) => {
+      selectedFile.value = event.target.files[0];
+    };
+
+    const uploadImage = async () => {
+      if (!selectedFile.value) {
+        message.value = 'Please select an image file first';
+        return;
       }
 
-      return {
-        title,
-        uploadBill
-      };
-    }
-  };
+      const formData = new FormData();
+      formData.append('image', selectedFile.value);
+
+      try {
+        const response = await axios.post('http://localhost:3000/api/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        message.value = 'Image uploaded successfully: ' + response.data.message;
+        console.log('Image uploaded successfully:', response.data);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        message.value = 'Error uploading image';
+      }
+    };
+
+    return {
+      onFileChange,
+      uploadImage,
+      selectedFile,  // Asegúrate de devolver selectedFile
+      message        // Asegúrate de devolver message
+    };
+  },
+};
 </script>
 
 <style scoped>
