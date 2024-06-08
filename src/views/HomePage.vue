@@ -23,30 +23,67 @@
         <h2>Your Food,<br>Your Future</h2>
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laborum facere in nam, officiis aspernatur consectetur aliquid sequi possimus et. Sint.</p>
       </div>
-      <div class="play-button"></div>
+      <div class="play-button">
+        <form @submit.prevent="uploadImage">
+          <input type="file" @change="onFileChange" />
+          <button type="submit">Upload Image</button>
+        </form>
+        <p v-if="message">{{ message }}</p>
+      </div>
     </header>
   </body>
 </template>
 
 <script>
-import { useRouter } from 'vue-router'; // Import useRouter for programmatic navigation
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 export default {
   setup() {
-    const title =   ("Food Care"); // Reactive title data
-    const router = useRouter(); // Router instance
+    const selectedFile = ref(null);  // Define selectedFile como ref
+    const message = ref('');         // Define message como ref para mostrar mensajes
+    const router = useRouter();
 
-
-    // Function to navigate to the login page
     const navigateToLogin = () => {
       router.push('/login');
-    }
+    };
+
+    const onFileChange = (event) => {
+      selectedFile.value = event.target.files[0];
+    };
+
+    const uploadImage = async () => {
+      if (!selectedFile.value) {
+        message.value = 'Please select an image file first';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', selectedFile.value);
+
+      try {
+        const response = await axios.post('http://localhost:3000/api/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        message.value = 'Image uploaded successfully: ' + response.data.message;
+        console.log('Image uploaded successfully:', response.data);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        message.value = 'Error uploading image';
+      }
+    };
 
     return {
-      title,
-      navigateToLogin
+      navigateToLogin,
+      onFileChange,
+      uploadImage,
+      selectedFile,  // Asegúrate de devolver selectedFile
+      message        // Asegúrate de devolver message
     };
-  }
+  },
 };
 </script>
 

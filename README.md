@@ -4,7 +4,7 @@
 ```
 npm install
 
-npm install mongodb --save
+npm install mongoose --save
 
 npm install express --save
 
@@ -37,4 +37,12 @@ npm run lint
 ```
 
 ### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+See [Configuration Reference](https://cli.vuejs.org/config/)
+
+### data base connection
+```
+node server.js
+```
+
+
+

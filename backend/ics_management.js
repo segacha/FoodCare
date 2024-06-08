@@ -5,9 +5,6 @@ const ics = require('ics')
 const { writeFileSync: write_file_sync } = require('fs');
 const { unlink } = require('fs');
 
-
-
-
 //this should take an array with all the products that will expire
 //make an all-day event for each one of them
 //put all event in an arry, and make one file for all events

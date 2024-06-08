@@ -45,7 +45,6 @@ export default {
   },
   methods:
   {
-
     async get_users()
     {
       const response = await axios.get("http://localhost:3000/api/foodcare/get_users");
