@@ -32,7 +32,7 @@ function get_date_obj(expiring_date)
   const year = parts[2].padStart(4, "20");
 
   const date_string = `${year}-${month}-${day}`;
-
+  
   return new Date(date_string);
 }
 

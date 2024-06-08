@@ -67,7 +67,7 @@ app.get('/api/foodcare/get_users', async (request, response) =>
 
 //bekommen einen user mit id
 app.get('/api/foodcare/get_user/:userId', async (req, res) =>
-{
+{ 
   const { userId } = req.params;
   try
   {

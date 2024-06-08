@@ -136,7 +136,7 @@ export default {
 </script>
 
 <style scoped>
-/* Añade tus estilos aquí */
+
 .form-control {
   margin-bottom: 10px;
 }
@@ -273,7 +273,7 @@ body{
 
 .social-icons a{
     border: 1px solid #ccc;
-    border-radius: 20%; /* Rounded corners */
+    border-radius: 20%; 
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -348,6 +348,3 @@ body{
     transform: translateX(200%);
 }
 </style>
-
-
-  

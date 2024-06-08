@@ -19,6 +19,8 @@ npm install router --save
 npm install simple-encryptor --save
 
 npm install nodemailer --save
+
+npm install ics --save
 ```
 5
 ### Compiles and hot-reloads for development
