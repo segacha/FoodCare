@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const product = require("../Product/product")
-const data = require("../response")
 
 const userSchema = new mongoose.Schema({
   firstname: { type: String, required: true },

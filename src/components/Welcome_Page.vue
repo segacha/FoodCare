@@ -1,110 +1,89 @@
 <template>
-  <body>
-    <header>
-      <nav class="navbar">
-        <div class="logo">
-          <a href="#">
-            FoodCare
-          </a>
-        </div>
-        <ul class="menu">
-          <li><a href="#">Home</a></li>
-          <li><a href="#">Latest</a></li>
-          <li><a href="#">Offers</a></li>
-          <li><a href="#">Services</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-        <div class="buttons">
-          <input type="button" value="Login" @click="navigateToLogin"/>
-          <input type="button" value="Register" @click="navigateToLogin" />
-        </div>
-      </nav>
-      <div class="text-content">
-        <h2>Your Food,<br>Your Future</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laborum facere in nam, officiis aspernatur consectetur aliquid sequi possimus et. Sint.</p>
+  <header>
+    <nav class="navbar">
+      <div class="logo">
+        <a href="#">
+          FoodCare
+        </a>
       </div>
-      <div class="play-button">
-        <form @submit.prevent="uploadImage">
-          <input type="file" @change="onFileChange" />
-          <button type="submit">Upload Image</button>
-        </form>
-        <p v-if="message">{{ message }}</p>
+      <ul class="menu">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Latest</a></li>
+        <li><a href="#">Offers</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+      <div class="buttons">
+        <input type="button" value="Login" @click="login_register_clicked" />
+        <input type="button" value="Register" @click="login_register_clicked" />
       </div>
-    </header>
-  </body>
+    </nav>
+    <div class="text-content">
+      <h2>Your Food,<br>Your Future</h2>
+      <h1>WELCOME PAGE</h1>
+      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laborum facere in nam, officiis aspernatur
+        consectetur aliquid sequi possimus et. Sint.</p>
+    </div>
+    <div class="play-button"></div>
+  </header>
+  <!--   </body>
+ -->
 </template>
 
 <script>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
-
+//import { useRouter } from 'vue-router'; // Import useRouter for programmatic navigation
+console.log("we are in welcome page");
 export default {
-  setup() {
-    const selectedFile = ref(null);  // Define selectedFile como ref
-    const message = ref('');         // Define message como ref para mostrar mensajes
-    const router = useRouter();
-
-    const navigateToLogin = () => {
-      router.push('/login');
-    };
-
-    const onFileChange = (event) => {
-      selectedFile.value = event.target.files[0];
-    };
-
-    const uploadImage = async () => {
-      if (!selectedFile.value) {
-        message.value = 'Please select an image file first';
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('image', selectedFile.value);
-
-      try {
-        const response = await axios.post('http://localhost:3000/api/upload', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        message.value = 'Image uploaded successfully: ' + response.data.message;
-        console.log('Image uploaded successfully:', response.data);
-      } catch (error) {
-        console.error('Error uploading image:', error);
-        message.value = 'Error uploading image';
-      }
-    };
-
+  data()
+  {
     return {
-      navigateToLogin,
-      onFileChange,
-      uploadImage,
-      selectedFile,  // Asegúrate de devolver selectedFile
-      message        // Asegúrate de devolver message
-    };
+      is_login_register_clicked: false
+    }
   },
+  methods:
+  {
+    login_register_clicked()
+    {
+      //give the oppiste value
+      this.is_login_register_clicked = true
+
+      //wir emit mit der event login_register_clicked, und geben is_login.. weiter ab
+      this.$emit('login_register_clicked', this.is_login_register_clicked);
+
+      //rest the value
+      this.is_login_register_clicked = false
+
+    }
+  },
+  setup()
+  {
+    const title = ("Food Care"); // Reactive title data
+    //const router = useRouter(); // Router instance
+
+
+    // Function to navigate to the login page
+    /* const navigateToLogin = () =>
+    {
+      router.push('/login');
+    } */
+    return {
+      title,
+      //navigateToLogin
+    };
+  }
 };
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-  transition: all 0.3s ease;
-}
-
-body {
+/* body {
   height: 100vh;
   width: 100%;
   display: flex;
   background-image: linear-gradient(135deg, #a9c05c 10%, #2da852 100%);
 }
-
+ */
 /*When selected with the mouse*/
 ::selection {
   color: #f2f2f2;
@@ -145,11 +124,6 @@ header .navbar {
   font-size: 22px;
   color: #000;
   font-weight: 500;
-}
-
-.navbar .logo .logoimg {
-  height: 100px; /* Ajusta la altura del logo según sea necesario */
-  margin-right: 10px; /* Espacio entre el logo y el texto */
 }
 
 .navbar .menu li {
@@ -242,13 +216,16 @@ header .play-button {
     justify-content: center;
     padding: 15px 5px;
   }
+
   .navbar .menu {
     margin: 10px 0 20px 0;
   }
+
   header .text-content {
     margin: 30px 0 0 20px;
     width: 70%;
   }
+
   header .text-content h2 {
     font-size: 20px;
   }
@@ -260,9 +237,9 @@ header .play-button {
     width: 100%;
     border-radius: 0px;
   }
+
   header .navbar {
     padding: 15px 10px;
   }
 }
 </style>
-

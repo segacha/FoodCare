@@ -1,7 +1,7 @@
 <template>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-<body>
-  <div class="container" id="container">
+<!-- <body>
+ -->  <div class="container" id="container">
     <!-- Sign-up form container -->
     <div class="form-container sign-up">
       <form @submit.prevent="register">
@@ -51,16 +51,18 @@
       </div>
     </div>
   </div>
-</body>
-</template>
+<!-- </body>
+ --></template>
 
 <script>
 import axios from 'axios';
+console.log("we are in login page")
 
 axios.defaults.baseURL = 'http://localhost:3000/api';
 
 export default {
   name: 'AuthPage',
+  emits: ['share_user', 'switch_to_home_page'],
   data() {
     return {
       registerUser: {
@@ -74,10 +76,31 @@ export default {
         password: ''
       },
       loading: false,
-      error: null
+      error: null,
+      switch_to_home_page: false
     };
   },
   methods: {
+    async share_user()
+    {
+      //share_user is the event name
+      //LoginUser ist was wir zu den Eltern comonent weitergeben moechten
+      try
+      {
+        console.log("we are in the share_user in LoginPage")
+        const email = this.loginUser.email;
+        console.log("email is: " + email);
+        const api_url = "http://localhost:3000/api/foodcare/get_user_by_email/" + email;
+        const response = await axios.get(api_url);
+        console.log("user is: " + response.data.user.firstname);
+        this.$emit('share_user', response.data.user);
+      }
+      catch(error)
+      {
+        console.log("we had error while trying to share the user in LoginPage: " + error);
+      }
+
+    },
     switchToLogin() {
       const container = document.getElementById('container');
       container.classList.remove('active');
@@ -109,11 +132,18 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.post('/user/login', this.loginUser);
+        const api_url = "http://localhost:3000/api/foodcare/get_user_by_email/" + this.loginUser.email; 
+        const response = await axios.get(api_url);
         const data = response.data;
         if (data.status) {
           alert('Login Successfully');
-          this.$router.push({ name: 'HomePage' });
+
+          await this.share_user();
+          this.switch_to_home_page = true;
+          //emit event heisst: "switch_to_home_page", und geben den wert weiter ab
+          this.$emit('switch_to_home_page', this.switch_to_home_page);
+          //reverse wert
+          this.switch_to_home_page = false;
         } else {
           alert('Login Failed');
         }
@@ -136,7 +166,7 @@ export default {
 </script>
 
 <style scoped>
-/* Añade tus estilos aquí */
+
 .form-control {
   margin-bottom: 10px;
 }
@@ -153,15 +183,15 @@ export default {
     font-family: 'Montserrat', sans-serif; /* Set font family */
 }
 
-body{
+/* body{
     background-color: #c9d6ff;
     background: linear-gradient(to right, #e2e2e2, #daffc9); /* Background gradient */
-    display: flex;
+    /*display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     height: 100vh; /* Full viewport height */
-}
+ 
 
 .container{
     background-color: #fff;
@@ -273,7 +303,7 @@ body{
 
 .social-icons a{
     border: 1px solid #ccc;
-    border-radius: 20%; /* Rounded corners */
+    border-radius: 20%; 
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -348,6 +378,3 @@ body{
     transform: translateX(200%);
 }
 </style>
-
-
-  
