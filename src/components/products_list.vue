@@ -16,6 +16,9 @@
           <li>And these iteams:</li>
           <ul v-for="product in user.products" :key="product._id">
             <li>{{ product.name }} which expiers at: {{ product.expiring_date }} and has the discription:</li>
+            <input v-model="product_expiring_date" placeholder="add a product's expiring_date" />
+            <!-- <div {{product.expiring_date=product_expiring_date}}></div> -->
+
             <ul>
               <li>{{ product.description }}</li>
             </ul>

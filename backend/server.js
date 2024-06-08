@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const User = require("../src/models/user/userModel.js");
 const Product = require("../src/models/Product/product.js");
-const routes = require('../src/router/routes');
 const auto_mailing_system = require("./auto_mailing_system.js");
 
 
@@ -31,8 +30,8 @@ mongoose
 // Middlewares
 app.use(cors());
 app.use(express.json());
-app.use("/api", routes);
-
+/* app.use("/api", routes);
+ */
 // Ruta base para verificar que el servidor está funcionando
 app.get("/", (req, res) =>
 {
@@ -78,6 +77,50 @@ app.get('/api/foodcare/get_user/:userId', async (req, res) =>
       return res.status(404).send('We couldn\'t find a user with the given ID!');
     }
     res.json(user);
+  } catch (error)
+  {
+    console.error('ehere was some kind error getting the user:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/api/foodcare/create_user/', async (req, res) =>
+{
+  const key = "123456789trytryrtry";
+  const encryptor = require("simple-encryptor")(key);
+  console.log("we are in the create user")
+  try
+  {
+    const user = new User({
+      firstname: req.firstname,
+      lastname: req.lastname,
+      email: req.email,
+      password: encryptor.encrypt(req.password),
+    });
+
+    await user.save();
+    res.json(user);
+  } catch (error)
+  {
+    console.error("Error creating user:", error);
+    return false;
+  }
+});
+
+app.get('/api/foodcare/get_user_by_email/:user_email', async (req, res) =>
+{
+  const email = req.params.user_email;
+  try
+  {
+    //und nochmal papulate um die tatsaechliche produkte zu haben und nicht ihre IDs
+    const user = await User.findOne({"email": email}).populate('products').exec();
+    console.log("we are in the get by email, and products are: " + user.products);
+    if (!user)
+    {
+      return res.status(404).send('We couldn\'t find a user with the given ID!');
+    }
+    res.send({status: true, msg:"User validated successfully", user})
+    
   } catch (error)
   {
     console.error('ehere was some kind error getting the user:', error);
@@ -139,4 +182,4 @@ app.post('/api/foodcare/add_product/:userId', async (req, res) =>
 });
 
 /*du kannst die unten methode auskommentieren wenn du den AMS an machen moechtest*/
-auto_mailing_system.daily_expiring_date_checks()
+auto_mailing_system.daily_expiring_date_checks();

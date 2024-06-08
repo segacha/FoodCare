@@ -1,50 +1,76 @@
 <template>
-  <body>
-    <header>
-      <nav class="navbar">
-        <div class="logo">
-          <a href="#">
-            FoodCare
-          </a>
-        </div>
-        <ul class="menu">
-          <li><a href="#">Home</a></li>
-          <li><a href="#">Latest</a></li>
-          <li><a href="#">Offers</a></li>
-          <li><a href="#">Services</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-        <div class="buttons">
-          <input type="button" value="Login" @click="navigateToLogin"/>
-          <input type="button" value="Register" @click="navigateToLogin" />
-        </div>
-      </nav>
-      <div class="text-content">
-        <h2>Your Food,<br>Your Future</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laborum facere in nam, officiis aspernatur consectetur aliquid sequi possimus et. Sint.</p>
+  <!--   <body>
+ -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">
+        <a href="#">
+          FoodCare
+        </a>
       </div>
-      <div class="play-button"></div>
-    </header>
-  </body>
+      <ul class="menu">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Latest</a></li>
+        <li><a href="#">Offers</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+      <div class="buttons">
+        <input type="button" value="Login" @click="login_register_clicked" />
+        <input type="button" value="Register" @click="login_register_clicked" />
+      </div>
+    </nav>
+    <div class="text-content">
+      <h2>Your Food,<br>Your Future</h2>
+      <h1>WELCOME PAGE</h1>
+      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laborum facere in nam, officiis aspernatur
+        consectetur aliquid sequi possimus et. Sint.</p>
+    </div>
+    <div class="play-button"></div>
+  </header>
+  <!--   </body>
+ -->
 </template>
 
 <script>
-import { useRouter } from 'vue-router'; // Import useRouter for programmatic navigation
-
+//import { useRouter } from 'vue-router'; // Import useRouter for programmatic navigation
+console.log("we are in welcome page");
 export default {
-  setup() {
-    const title =   ("Food Care"); // Reactive title data
-    const router = useRouter(); // Router instance
+  data()
+  {
+    return {
+      is_login_register_clicked: false
+    }
+  },
+  methods:
+  {
+    login_register_clicked()
+    {
+      //give the oppiste value
+      this.is_login_register_clicked = true
+
+      //wir emit mit der event login_register_clicked, und geben is_login.. weiter ab
+      this.$emit('login_register_clicked', this.is_login_register_clicked);
+
+      //rest the value
+      this.is_login_register_clicked = false
+
+    }
+  },
+  setup()
+  {
+    const title = ("Food Care"); // Reactive title data
+    //const router = useRouter(); // Router instance
 
 
     // Function to navigate to the login page
-    const navigateToLogin = () => {
+    /* const navigateToLogin = () =>
+    {
       router.push('/login');
-    }
-
+    } */
     return {
       title,
-      navigateToLogin
+      //navigateToLogin
     };
   }
 };
@@ -61,13 +87,13 @@ export default {
   transition: all 0.3s ease;
 }
 
-body {
+/* body {
   height: 100vh;
   width: 100%;
   display: flex;
   background-image: linear-gradient(135deg, #a9c05c 10%, #2da852 100%);
 }
-
+ */
 /*When selected with the mouse*/
 ::selection {
   color: #f2f2f2;
@@ -111,8 +137,10 @@ header .navbar {
 }
 
 .navbar .logo .logoimg {
-  height: 100px; /* Ajusta la altura del logo según sea necesario */
-  margin-right: 10px; /* Espacio entre el logo y el texto */
+  height: 100px;
+  /* Ajusta la altura del logo según sea necesario */
+  margin-right: 10px;
+  /* Espacio entre el logo y el texto */
 }
 
 .navbar .menu li {
@@ -205,13 +233,16 @@ header .play-button {
     justify-content: center;
     padding: 15px 5px;
   }
+
   .navbar .menu {
     margin: 10px 0 20px 0;
   }
+
   header .text-content {
     margin: 30px 0 0 20px;
     width: 70%;
   }
+
   header .text-content h2 {
     font-size: 20px;
   }
@@ -223,9 +254,9 @@ header .play-button {
     width: 100%;
     border-radius: 0px;
   }
+
   header .navbar {
     padding: 15px 10px;
   }
 }
 </style>
-
