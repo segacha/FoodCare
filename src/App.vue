@@ -2,6 +2,7 @@
 import HomePage from "../src/components/HomePage.vue"
 import LoginPage from "../src/components/LoginPage.vue"
 import Welcome_Page from "./components/Welcome_Page.vue";
+import axios from 'axios';
 
 export default
   {
@@ -25,8 +26,17 @@ export default
     {
       install_user(user)
       {
-        console.log("we are in the install user and the user is: " + user.products[0].name);
+        console.log("we are in the install user and the user is: " + user);
         this.user = user;
+      },
+      async refreshUser()
+      {
+        try {
+            const response = await axios.get(`http://localhost:3000/api/foodcare/get_user_by_email/${this.user.email}`);
+            this.user = response.data.user;
+        } catch (error) {
+          console.error('Error refreshing user:', error);
+        }
       },
       testing()
       {
@@ -65,7 +75,7 @@ export default
     </div>
 
     <div v-if="show_home_page" class="home_page">
-      <HomePage :user="user"></HomePage>
+      <HomePage :user="user" @user-updated="refreshUser"></HomePage>
     </div>
 
 </template>
@@ -77,7 +87,6 @@ export default
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
 }
-
 
 .welcome_page{
   height: 100vh;

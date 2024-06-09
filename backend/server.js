@@ -57,13 +57,12 @@ app.get("/", (req, res) =>
 });
 
 // Ruta para manejar la carga y procesamiento de imágenes
-app.post('/api/upload', upload.single('image'), async (req, res) =>
-{
+app.post('/api/upload', upload.single('image'), async (req, res) => {
   const imagePath = req.file.path; // Ruta de la imagen cargada
   const base64Image = fs.readFileSync(imagePath).toString('base64'); // Leer y convertir la imagen a base64
+  const userId = req.body.userId; // Obtener el ID del usuario desde el cuerpo de la solicitud
 
-  try
-  {
+  try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -87,43 +86,44 @@ app.post('/api/upload', upload.single('image'), async (req, res) =>
     jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); // Limpiar el formato JSON
     const jsonData = JSON.parse(jsonString); // Parsear la respuesta JSON
 
-    if (Array.isArray(jsonData.items))
-    {  // Asegurarse de que jsonData es un array
-      jsonData.items.forEach(async (item) =>
-      {
-        const expiring_date = prompt("Write the expiring date of this product: " + item.name)
+    if (Array.isArray(jsonData.items)) {  // Asegurarse de que jsonData es un array
+      const user = await User.findById(userId);
+
+      if (!user) {
+        res.status(404).send('Usuario no encontrado');
+        return;
+      }
+
+      const productPromises = jsonData.items.map(async (item) => {
+        const expiring_date = prompt("Write the expiring date of this product: " + item.name);
         const newProduct = new Product({
-          name: item.name, // Asegúrate de que jsonData tiene estos campos
+          name: item.name,
           preis: item.price,
           expiring_date: expiring_date
         });
 
-        try
-        {
-          await newProduct.save();
-          console.log('Producto guardado:', newProduct);
-        } catch (error)
-        {
-          console.error('Error guardando producto:', error);
-        }
+        await newProduct.save();
+        user.products.push(newProduct._id);
+        return newProduct;
       });
-    } else
-    {
-      console.error('jsonData no es un array');
-      res.status(400).send('Datos inválidos: se esperaba un array');
-      return;
-    }
 
-    res.send('Todos los productos se han guardado correctamente.');
-  } catch (error)
-  {
+      await Promise.all(productPromises);
+      await user.save();
+
+      res.send('Todos los productos se han guardado correctamente.');
+    } else {
+      res.status(400).send('Datos inválidos: se esperaba un array');
+    }
+    
+
+  } catch (error) {
     console.error('Error processing image:', error.response ? error.response.data : error.message);
     res.status(500).send('Internal Server Error');
-  } finally
-  {
+  } finally {
     fs.unlinkSync(imagePath); // Eliminar la imagen después de procesarla
   }
 });
+
 
 // Ruta para obtener usuarios
 app.get('/api/foodcare/get_users', async (req, res) =>

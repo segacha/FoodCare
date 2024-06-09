@@ -2,9 +2,7 @@
   <header>
     <nav class="navbar">
       <div class="logo">
-        <a href="#">
-          FoodCare
-        </a>
+        <a href="#">FoodCare</a>
       </div>
       <ul class="menu">
         <li><a href="#">Home</a></li>
@@ -20,11 +18,11 @@
     <div class="content">
       <section class="supermarket-list">
         <h2>Supermarket Items</h2>
-        <ul v-if="user">
-            <li>{{user.firstname}} has the following products:</li>
-            <ul>
-              <li v-for="product in user.products" :key="product._id">{{product.name}} and expires at: {{product.expiring_date}}</li>
-            </ul>
+        <div v-if="user">
+        <p>{{ user.firstname }}</p>
+      </div>
+      <ul v-if="user">
+          <li v-for="product in user.products" :key="product._id">{{ product.name }} - {{ product.preis }}</li>
         </ul>
       </section>
     </div>
@@ -37,85 +35,76 @@
     </div>
   </header>
 </template>
+
 <script>
-import { ref } from 'vue';
+import { ref, toRefs } from 'vue';
 import axios from 'axios';
-export default
-  {
-    name: "HomePage",
-    type: Object,
-    required: true,
-    props: {
-      user: {
-        type: Object,
-        required: false,
-        validator: (value) =>
-        {
-          return (
-            typeof value._id === 'string' &&
-            typeof value.firstname === 'string' &&
-            typeof value.lastname === 'string' &&
-            typeof value.email === 'string' &&
-            typeof value.password === 'string' &&
-            Array.isArray(value.products) &&
-            typeof value.__v === 'number'
-          );
-        },
+
+export default {
+  name: "HomePage",
+  props: {
+    user: {
+      type: Object,
+      required: true,
+      validator: (value) => {
+        return (
+          typeof value._id === 'string' &&
+          typeof value.firstname === 'string' &&
+          typeof value.lastname === 'string' &&
+          typeof value.email === 'string' &&
+          typeof value.password === 'string' &&
+          Array.isArray(value.products) &&
+          typeof value.__v === 'number'
+        );
       },
     },
-    data()
-    {
-      return {
-        show_login_page: false,
-        
+  },
+  setup(props, { emit }) {
+    const { user } = toRefs(props);
+    const selectedFile = ref(null);
+    const message = ref('');
+
+    const onFileChange = (event) => {
+      selectedFile.value = event.target.files[0];
+    };
+
+    const uploadImage = async () => {
+      if (!selectedFile.value) {
+        message.value = 'Please select an image file first';
+        return;
       }
-    },
-    setup()
-    {
-      const selectedFile = ref(null);  // Define selectedFile como ref
-      const message = ref('');         // Define message como ref para mostrar mensajes
 
-      const onFileChange = (event) =>
-      {
-        selectedFile.value = event.target.files[0];
-      };
+      const formData = new FormData();
+      formData.append('image', selectedFile.value);
+      formData.append('userId', user.value._id); // Añadir el ID del usuario
 
-      const uploadImage = async () =>
-      {
-        if (!selectedFile.value)
-        {
-          message.value = 'Please select an image file first';
-          return;
-        }
 
-        const formData = new FormData();
-        formData.append('image', selectedFile.value);
+      try {
+        const response = await axios.post('http://localhost:3000/api/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        message.value = 'Image uploaded successfully: ' + response.data.message;
+        console.log('Image uploaded successfully:', response.data);
+        emit('user-updated'); // Emitir evento de actualización de usuario
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        message.value = 'Error uploading image';
+      }
+    };
 
-        try
-        {
-          const response = await axios.post('http://localhost:3000/api/upload', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          });
-          message.value = 'Image uploaded successfully: ' + response.data.message;
-          console.log('Image uploaded successfully:', response.data);
-        } catch (error)
-        {
-          console.error('Error uploading image:', error);
-          message.value = 'Error uploading image';
-        }
-      };
-
-      return {
-        onFileChange,
-        uploadImage,
-        selectedFile,  // Asegúrate de devolver selectedFile
-        message        // Asegúrate de devolver message
-      };
-    },
-  };
+    return {
+      onFileChange,
+      uploadImage,
+      selectedFile,
+      message
+    };
+  },
+};
 </script>
+
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
