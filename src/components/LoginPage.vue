@@ -183,16 +183,6 @@ export default {
     font-family: 'Montserrat', sans-serif; /* Set font family */
 }
 
-/* body{
-    background-color: #c9d6ff;
-    background: linear-gradient(to right, #e2e2e2, #daffc9); /* Background gradient */
-    /*display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    height: 100vh; /* Full viewport height */
- 
-
 .container{
     background-color: #fff;
     border-radius: 30px; /* Rounded corners */

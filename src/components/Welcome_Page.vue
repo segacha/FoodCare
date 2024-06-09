@@ -70,13 +70,6 @@ export default {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
 
-/* body {
-  height: 100vh;
-  width: 100%;
-  display: flex;
-  background-image: linear-gradient(135deg, #a9c05c 10%, #2da852 100%);
-}
- */
 /*When selected with the mouse*/
 ::selection {
   color: #f2f2f2;
