@@ -57,18 +57,11 @@ export default {
   },
   setup()
   {
-    const title = ("Food Care"); // Reactive title data
-    //const router = useRouter(); // Router instance
-
-
-    // Function to navigate to the login page
-    /* const navigateToLogin = () =>
-    {
-      router.push('/login');
-    } */
+    const title = ("Food Care"); 
+ 
     return {
       title,
-      //navigateToLogin
+
     };
   }
 };

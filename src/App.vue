@@ -17,7 +17,7 @@ export default
       return {
         user: "null",
         show_welcome_page: true,
-        show_login_page: false,
+        show_login_page: false, 
         show_home_page: false
       }
     },
@@ -76,16 +76,31 @@ export default
   padding: 0;
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
-  transition: all 0.3s ease;
 }
-body {
+
+
+.welcome_page{
   height: 100vh;
   width: 100%;
   display: flex;
   background-image: linear-gradient(135deg, #a9c05c 10%, #2da852 100%);
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
+}
+
+.home_page{
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  background-image: linear-gradient(135deg, #a9c05c 10%, #2da852 100%);
+}
+
+.login_page{
+  background-color: #c9d6ff;
+    background: linear-gradient(to right, #e2e2e2, #daffc9); /* Background gradient */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh; 
 }
 
 
