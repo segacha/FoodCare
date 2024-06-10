@@ -81,18 +81,15 @@ export default
 </template>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
+
 
 .welcome_page{
   height: 100vh;
   width: 100%;
   display: flex;
   background-image: linear-gradient(135deg, #a9c05c 10%, #2da852 100%);
+  justify-content: center;
+  align-items: center;
 }
 
 .home_page{
@@ -100,6 +97,7 @@ export default
   width: 100%;
   display: flex;
   background-image: linear-gradient(135deg, #a9c05c 10%, #2da852 100%);
+
 }
 
 .login_page{

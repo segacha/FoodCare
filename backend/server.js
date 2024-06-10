@@ -4,11 +4,12 @@ const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
 const OpenAI = require('openai');
-require('dotenv').config(); // Asegúrate de tener un archivo .env con las variables de entorno necesarias
-const Response = require('../src/models/response.js'); // Asegúrate de que la ruta sea correcta
+require('dotenv').config();
+const Response = require('../src/models/response.js'); 
 const User = require("../src/models/user/userModel.js");
 const Product = require("../src/models/Product/product.js");
 const auto_mailing_system = require("./auto_mailing_system.js");
+const { stringify } = require('querystring');
 const prompt = require('prompt-sync')();
 
 const app = express();
@@ -17,11 +18,9 @@ mongoose.set("strictQuery", false);
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Conectar a la base de datos de MongoDB
+//MongoDB Connection
 mongoose
   .connect("mongodb+srv://foodcare:webtech2@foodcare.gygzrc9.mongodb.net/foodcaredb", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
   })
   .then(() =>
   {
@@ -32,7 +31,7 @@ mongoose
     console.error("Database cannot be Connected", error);
   });
 
-// Configurar multer para manejar la carga de imágenes
+// Multer bearbeitet das Upload von dem Foto
 const storage = multer.diskStorage({
   destination: function (req, file, cb)
   {
@@ -48,21 +47,21 @@ const upload = multer({ storage: storage });
 // Middlewares
 app.use(cors());
 app.use(express.json());
-/* app.use("/api", routes);
- */
-// Ruta base para verificar que el servidor está funcionando
+
+// Server Check
 app.get("/", (req, res) =>
 {
   res.send("Server is running");
 });
 
-// Ruta para manejar la carga y procesamiento de imágenes
+// ChatGPT API, Upload und Bearbeitung der Foto
 app.post('/api/upload', upload.single('image'), async (req, res) => {
-  const imagePath = req.file.path; // Ruta de la imagen cargada
-  const base64Image = fs.readFileSync(imagePath).toString('base64'); // Leer y convertir la imagen a base64
-  const userId = req.body.userId; // Obtener el ID del usuario desde el cuerpo de la solicitud
+  const imagePath = req.file.path; 
+  const base64Image = fs.readFileSync(imagePath).toString('base64'); // Lesen und Umwandeln in base64
+  const userId = req.body.userId; // ID abgabe
 
-  try {
+  try
+  {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -83,19 +82,20 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     });
 
     let jsonString = response.choices[0].message.content;
-    jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); // Limpiar el formato JSON
-    const jsonData = JSON.parse(jsonString); // Parsear la respuesta JSON
+    jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); //JSON file wurde gefiltert
+    const jsonData = JSON.parse(jsonString); 
 
-    if (Array.isArray(jsonData.items)) {  // Asegurarse de que jsonData es un array
+    if (Array.isArray(jsonData.items)) {  
       const user = await User.findById(userId);
 
-      if (!user) {
+      if (!user)
+      {
         res.status(404).send('Usuario no encontrado');
         return;
       }
 
       const productPromises = jsonData.items.map(async (item) => {
-        const expiring_date = prompt("Write the expiring date of this product: " + item.name);
+        const expiring_date = prompt("Write the expiring date of this product: " + item.name+" ");
         const newProduct = new Product({
           name: item.name,
           preis: item.price,
@@ -111,21 +111,23 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
       await user.save();
 
       res.send('Todos los productos se han guardado correctamente.');
-    } else {
+    } else
+    {
       res.status(400).send('Datos inválidos: se esperaba un array');
     }
-    
 
-  } catch (error) {
+
+  } catch (error)
+  {
     console.error('Error processing image:', error.response ? error.response.data : error.message);
     res.status(500).send('Internal Server Error');
   } finally {
-    fs.unlinkSync(imagePath); // Eliminar la imagen después de procesarla
+    fs.unlinkSync(imagePath); //Delete Foto after used
   }
 });
 
 
-// Ruta para obtener usuarios
+// GET USERS
 app.get('/api/foodcare/get_users', async (req, res) =>
 {
   try
@@ -139,7 +141,7 @@ app.get('/api/foodcare/get_users', async (req, res) =>
   }
 });
 
-//bekommen einen user mit id
+//GET USER BY ID
 app.get('/api/foodcare/get_user/:userId', async (req, res) =>
 {
   const { userId } = req.params;
@@ -158,25 +160,28 @@ app.get('/api/foodcare/get_user/:userId', async (req, res) =>
   }
 });
 
+//CREATE USER
 app.post('/api/foodcare/create_user/', async (req, res) =>
 {
+  
   const key = "123456789trytryrtry";
   const encryptor = require("simple-encryptor")(key);
-  console.log("we are in the create user")
+  console.log("we are in the create user");
+  console.log("req is: " + req.body.firstname)
   try
   {
     const user = new User({
-      firstname: req.firstname,
-      lastname: req.lastname,
-      email: req.email,
-      password: encryptor.encrypt(req.password),
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+      email: req.body.email,
+      password: encryptor.encrypt(req.body.password),
     });
 
     await user.save();
-    res.json(user);
+    res.send({status:true, user} )
   } catch (error)
   {
-    console.error("Error creating user:", error);
+    console.error("Error creating user:\n", error);
     return false;
   }
 });
@@ -188,50 +193,6 @@ app.get('/api/foodcare/get_user_by_email/:user_email', async (req, res) =>
   {
     //und nochmal papulate um die tatsaechliche produkte zu haben und nicht ihre IDs
     const user = await User.findOne({ "email": email }).populate('products').exec();
-    if (!user)
-    {
-      return res.status(404).send('We couldn\'t find a user with the given ID!');
-    }
-    res.send({ status: true, msg: "User validated successfully", user })
-
-  } catch (error)
-  {
-    console.error('ehere was some kind error getting the user:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-app.post('/api/foodcare/create_user/', async (req, res) =>
-{
-  const key = "123456789trytryrtry";
-  const encryptor = require("simple-encryptor")(key);
-  console.log("we are in the create user")
-  try
-  {
-    const user = new User({
-      firstname: req.firstname,
-      lastname: req.lastname,
-      email: req.email,
-      password: encryptor.encrypt(req.password),
-    });
-
-    await user.save();
-    res.json(user);
-  } catch (error)
-  {
-    console.error("Error creating user:", error);
-    return false;
-  }
-});
-
-app.get('/api/foodcare/get_user_by_email/:user_email', async (req, res) =>
-{
-  const email = req.params.user_email;
-  try
-  {
-    //und nochmal papulate um die tatsaechliche produkte zu haben und nicht ihre IDs
-    const user = await User.findOne({ "email": email }).populate('products').exec();
-    console.log("we are in the get by email, and products are: " + user.products);
     if (!user)
     {
       return res.status(404).send('We couldn\'t find a user with the given ID!');
@@ -264,7 +225,7 @@ app.get('/api/foodcare/get_products/:userId', async (req, res) =>
   }
 });
 
-// Ruta para agregar un nuevo producto
+//ADD PRODUCT TO USER BY ID
 app.post('/api/foodcare/add_product/:userId', async (req, res) =>
 {
   const { userId } = req.params;
@@ -289,23 +250,23 @@ app.post('/api/foodcare/add_product/:userId', async (req, res) =>
   }
 });
 
-// Ejecución del sistema de correos automáticos
+//Automating mail system checking the expiring date of all the Products
 auto_mailing_system.daily_expiring_date_checks();
 
-// Manejo de errores
+//Error Handling
 app.use((err, req, res, next) =>
 {
   console.error(err.stack);
   res.status(500).send("Something broke!");
 });
 
-// Iniciar el servidor
+//Start Server
 app.listen(PORT, () =>
 {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-//delete_garbge_products()
+//TEST
 async function delete_garbge_products()
 {
   try
