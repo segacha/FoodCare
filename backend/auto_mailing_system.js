@@ -1,9 +1,11 @@
 const Product = require("../src/models/Product/product.js");
 const axios = require('axios');
 const ics_management = require('../backend/ics_management.js');
+const path = require('path');
+const nodemailer = require('nodemailer');
 
-const EXPIRING_DATE_LIMIT = 230;
-const MAXIMUM_EMAILS_PER_PRODUCT = 2;
+const EXPIRING_DATE_LIMIT = 400;
+const MAXIMUM_EMAILS_PER_PRODUCT = 2; //200
 const EMAILS_TIME_DIFF = Math.ceil(EXPIRING_DATE_LIMIT / MAXIMUM_EMAILS_PER_PRODUCT);
 let products_will_expire = []
 
@@ -32,7 +34,11 @@ function get_date_obj(expiring_date)
   const year = parts[2].padStart(4, "20");
 
   const date_string = `${year}-${month}-${day}`;
-  
+  if (day > 31 || month > 12)
+  {
+    console.log(expiring_date)
+    throw new Error('du hast ungueltige Datum eingegeben');
+  }
   return new Date(date_string);
 }
 
@@ -75,9 +81,9 @@ async function check_emails_to_send()
     const products = user.products;
     let products_str = "";
     //check sending conditions
-    for(const product of products)
+    for (const product of products)
     {
-      const should_be_sent = await should_user_get_email(product);
+      let should_be_sent = await should_user_get_email(product);
       if (did_cross_expiring_limit(product) && should_be_sent)
       {
         products_will_expire.push(product);
@@ -103,6 +109,7 @@ async function check_emails_to_send()
     //clearing the array for the next user
     products_will_expire = [];
   }
+
 }
 
 async function send_email(user, user_products_list)
@@ -111,7 +118,7 @@ async function send_email(user, user_products_list)
   const user_email = user.email;
   const user_id = user._id;
 
-  let text = "Hello Mr/Ms." + user_name + "!\n\n";
+  let text = "Hello Mr/Ms. " + user_name + "!\n\n";
   text += "We are from FoodCare Team and we found out that the following Product(s) will expire soon:\n";
   text += user_products_list + "\n\n";
   text += "Please do something about the food!\n\n";
@@ -119,6 +126,7 @@ async function send_email(user, user_products_list)
 
   //erzeugen produkte und den entsprechended ics_file
   const products = await get_user_products(user_id);
+  console.log("we are above the ics_management");
   await ics_management.make_ics_file(products);
   //we need to add attachment aka the events.ics
   const mail_option =
@@ -175,13 +183,13 @@ async function should_user_get_email(product)
 {
   const days_till_expiring = calc_days_till_expire(product.expiring_date);
   let j = MAXIMUM_EMAILS_PER_PRODUCT;
-  const emails_num = product.num_of_received_emails;
+  let emails_num = product.num_of_received_emails;
   let x = j - 1;
-  const the_x = (x * EMAILS_TIME_DIFF);
-  const the_j = (j * EMAILS_TIME_DIFF);
 
   for (let i = 0; i < MAXIMUM_EMAILS_PER_PRODUCT; i++) 
   {
+    //400 / 2 = 200
+    //400-200/200-0
     //wir schauen ob days_till_expiring die EMAILS_TIME_DIFF steht.
     //wenn ja, wir gucken ob es gleich 'i' ist (das heißt einen email muss geschick werden)
     //wir machen update zu der product und geben true zureuck, dass 'ja, wir sollen email schicken'
@@ -205,6 +213,7 @@ async function should_user_get_email(product)
       const db_product = await Product.findById(product._id).exec();
       db_product.num_of_received_emails = emails_num + 1;
       await db_product.save();
+      emails_num = db_product.num_of_received_emails
     }
     j--;
     x--;
@@ -241,4 +250,4 @@ async function get_user_products(user_id)
   return products;
 }
 
-module.exports = {daily_expiring_date_checks};
+module.exports = { daily_expiring_date_checks };

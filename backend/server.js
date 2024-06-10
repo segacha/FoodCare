@@ -9,6 +9,7 @@ const Response = require('../src/models/response.js'); // Asegúrate de que la r
 const User = require("../src/models/user/userModel.js");
 const Product = require("../src/models/Product/product.js");
 const auto_mailing_system = require("./auto_mailing_system.js");
+const { stringify } = require('querystring');
 const prompt = require('prompt-sync')();
 
 const app = express();
@@ -57,12 +58,14 @@ app.get("/", (req, res) =>
 });
 
 // Ruta para manejar la carga y procesamiento de imágenes
-app.post('/api/upload', upload.single('image'), async (req, res) => {
+app.post('/api/upload', upload.single('image'), async (req, res) =>
+{
   const imagePath = req.file.path; // Ruta de la imagen cargada
   const base64Image = fs.readFileSync(imagePath).toString('base64'); // Leer y convertir la imagen a base64
   const userId = req.body.userId; // Obtener el ID del usuario desde el cuerpo de la solicitud
 
-  try {
+  try
+  {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -86,15 +89,18 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); // Limpiar el formato JSON
     const jsonData = JSON.parse(jsonString); // Parsear la respuesta JSON
 
-    if (Array.isArray(jsonData.items)) {  // Asegurarse de que jsonData es un array
+    if (Array.isArray(jsonData.items))
+    {  // Asegurarse de que jsonData es un array
       const user = await User.findById(userId);
 
-      if (!user) {
+      if (!user)
+      {
         res.status(404).send('Usuario no encontrado');
         return;
       }
 
-      const productPromises = jsonData.items.map(async (item) => {
+      const productPromises = jsonData.items.map(async (item) =>
+      {
         const expiring_date = prompt("Write the expiring date of this product: " + item.name);
         const newProduct = new Product({
           name: item.name,
@@ -111,15 +117,18 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
       await user.save();
 
       res.send('Todos los productos se han guardado correctamente.');
-    } else {
+    } else
+    {
       res.status(400).send('Datos inválidos: se esperaba un array');
     }
-    
 
-  } catch (error) {
+
+  } catch (error)
+  {
     console.error('Error processing image:', error.response ? error.response.data : error.message);
     res.status(500).send('Internal Server Error');
-  } finally {
+  } finally
+  {
     fs.unlinkSync(imagePath); // Eliminar la imagen después de procesarla
   }
 });
@@ -160,66 +169,25 @@ app.get('/api/foodcare/get_user/:userId', async (req, res) =>
 
 app.post('/api/foodcare/create_user/', async (req, res) =>
 {
+  
   const key = "123456789trytryrtry";
   const encryptor = require("simple-encryptor")(key);
-  console.log("we are in the create user")
+  console.log("we are in the create user");
+  console.log("req is: " + req.body.firstname)
   try
   {
     const user = new User({
-      firstname: req.firstname,
-      lastname: req.lastname,
-      email: req.email,
-      password: encryptor.encrypt(req.password),
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+      email: req.body.email,
+      password: encryptor.encrypt(req.body.password),
     });
 
     await user.save();
-    res.json(user);
+    res.send({status:true, user} )
   } catch (error)
   {
-    console.error("Error creating user:", error);
-    return false;
-  }
-});
-
-app.get('/api/foodcare/get_user_by_email/:user_email', async (req, res) =>
-{
-  const email = req.params.user_email;
-  try
-  {
-    //und nochmal papulate um die tatsaechliche produkte zu haben und nicht ihre IDs
-    const user = await User.findOne({ "email": email }).populate('products').exec();
-    if (!user)
-    {
-      return res.status(404).send('We couldn\'t find a user with the given ID!');
-    }
-    res.send({ status: true, msg: "User validated successfully", user })
-
-  } catch (error)
-  {
-    console.error('ehere was some kind error getting the user:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-app.post('/api/foodcare/create_user/', async (req, res) =>
-{
-  const key = "123456789trytryrtry";
-  const encryptor = require("simple-encryptor")(key);
-  console.log("we are in the create user")
-  try
-  {
-    const user = new User({
-      firstname: req.firstname,
-      lastname: req.lastname,
-      email: req.email,
-      password: encryptor.encrypt(req.password),
-    });
-
-    await user.save();
-    res.json(user);
-  } catch (error)
-  {
-    console.error("Error creating user:", error);
+    console.error("Error creating user:\n", error);
     return false;
   }
 });
