@@ -16,7 +16,6 @@ async function make_ics_file(products)
   products.forEach((product) =>
   {
     let expiring_date = product.expiring_date;
-    console.log("expiring_date in ics: " + expiring_date);
     //getting an 'Date' object von der expiring date
     expiring_date = get_date_obj(expiring_date);
 

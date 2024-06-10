@@ -193,7 +193,6 @@ app.get('/api/foodcare/get_user_by_email/:user_email', async (req, res) =>
   {
     //und nochmal papulate um die tatsaechliche produkte zu haben und nicht ihre IDs
     const user = await User.findOne({ "email": email }).populate('products').exec();
-    console.log("we are in the get by email, and products are: " + user.products);
     if (!user)
     {
       return res.status(404).send('We couldn\'t find a user with the given ID!');
