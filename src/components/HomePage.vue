@@ -2,12 +2,11 @@
   <header>
     <nav class="navbar">
       <div class="logo">
+        <img src="../assets/logo.png" alt="">
         <a href="#">FoodCare</a>
       </div>
       <ul class="menu">
         <li><a href="#">Home</a></li>
-        <li><a href="#">Latest</a></li>
-        <li><a href="#">Offers</a></li>
         <li><a href="#">Services</a></li>
         <li><a href="#">Contact</a></li>
       </ul>
@@ -16,22 +15,23 @@
       </div>
     </nav>
     <div class="content">
+      <div v-if="user">
+        <h1>Welcome, {{ user.firstname }}!</h1>
+      </div>  
       <section class="supermarket-list">
-        <h2>Supermarket Items</h2>
-        <div v-if="user">
-        <p>{{ user.firstname }}</p>
-      </div>
+        <h2>Products 🛒</h2>
       <ul v-if="user">
-          <li v-for="product in user.products" :key="product._id">{{ product.name }} - {{ product.preis }}</li>
-        </ul>
+          <li v-for="product in user.products" :key="product._id">{{ product.name }} - {{ product.expiring_date }}</li>
+      </ul>
       </section>
     </div>
     <div class="upload-button">
       <form @submit.prevent="uploadImage">
-        <input type="file" @change="onFileChange" />
+        <label for="file-upload" class="custom-file-upload">Choose File</label>
+        <input id="file-upload" type="file" @change="onFileChange" />
         <button type="submit">Upload Image</button>
       </form>
-      <p v-if="message">{{ message }}</p>
+  <p v-if="message">{{ message }}</p>
     </div>
   </header>
 </template>
@@ -64,10 +64,17 @@ export default {
     const selectedFile = ref(null);
     const message = ref('');
 
-    const onFileChange = (event) => {
-      selectedFile.value = event.target.files[0];
+    const onFileChange = (event) => { // Cambiado a función flecha
+      const fileInput = event.target;
+      const label = fileInput.previousElementSibling;
+      if (fileInput.files && fileInput.files.length > 0) {
+        label.classList.add('selected');
+        selectedFile.value = fileInput.files[0]; // Asignar el archivo seleccionado
+      } else {
+        label.classList.remove('selected');
+        selectedFile.value = null; // Resetear el archivo seleccionado
+      }
     };
-
     const uploadImage = async () => {
       if (!selectedFile.value) {
         message.value = 'Please select an image file first';
@@ -87,7 +94,7 @@ export default {
         });
         message.value = 'Image uploaded successfully: ' + response.data.message;
         console.log('Image uploaded successfully:', response.data);
-        emit('user-updated'); // Emitir evento de actualización de usuario
+        emit('user-updated'); 
       } catch (error) {
         console.error('Error uploading image:', error);
         message.value = 'Error uploading image';
@@ -107,7 +114,14 @@ export default {
 
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Rubik';
+}
 
 /*When selected with the mouse*/
 ::selection {
@@ -146,12 +160,20 @@ header .navbar {
   display: flex;
   flex-wrap: wrap;
 }
+.navbar .logo{
+  display: flex;
+}
+.navbar .logo img{
+  height: 48px;
+  width: auto;
+  margin-right: 3px;
+}
 
 .navbar .logo a {
   text-decoration: none;
-  font-size: 22px;
+  font-size: 45px;
   color: #000;
-  font-weight: 500;
+  font-weight: 750;
 }
 
 .navbar .menu li {
@@ -195,6 +217,14 @@ header .content {
   flex: 1;
 }
 
+header .content h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #000000;
+}
+
+
 .supermarket-list {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 15px;
@@ -222,12 +252,52 @@ header .content {
   position: absolute;
   right: 20px;
   bottom: 20px;
-
 }
 
-.upload-button input {
+.upload-button form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.upload-button input[type="file"] {
+  display: none;
+}
+
+.custom-file-upload {
   outline: none;
-  color: #f2f2f2;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 6px 15px;
+  border-radius: 12px;
+  border: 2px solid #2da852;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  color: #2da852;
+  display: inline-block; /* Label wird als eine Button funktioniert */
+}
+
+.custom-file-upload:hover {
+  background-color: #000;
+  color: #fff;
+}
+
+.custom-file-upload.selected {
+  background-color: #2da852;
+  color: #fff;
+  border: 2px solid #fff;
+}
+
+.upload-button input[type="file"]:hover {
+  background-color: #2da852;
+  color: #fff;
+}
+
+.upload-button button {
+  outline: none;
+  color: #fff;
   font-size: 18px;
   font-weight: 500;
   border-radius: 12px;
@@ -236,10 +306,9 @@ header .content {
   cursor: pointer;
   transition: all 0.3s ease;
   background-image: linear-gradient(135deg, #a9c05c 10%, #2da852 100%);
-
 }
 
-.upload-button input:hover {
+.upload-button button:hover {
   transform: scale(0.97);
 }
 
@@ -265,7 +334,7 @@ header .content {
   }
 }
 
-@media (max-width: 410px) {
+@media (max-width: 389px) {
   header {
     height: 100vh;
     width: 100%;

@@ -1,7 +1,6 @@
 <template>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-<!-- <body>
- -->  <div class="container" id="container">
+  <div class="container" id="container">
     <!-- Sign-up form container -->
     <div class="form-container sign-up">
       <form @submit.prevent="register">
@@ -44,15 +43,14 @@
           <button class="hidden" id="login" @click="switchToLogin">SIGN IN</button>
         </div>
         <div class="toggle-panel toggle-right">
-          <h1>Hello, Broksy!</h1>
+          <h1>Hello, Foodie!</h1>
           <p>Register with your personal details and start saving</p>
           <button class="hidden" id="register" @click="switchToRegister">SIGN UP</button>
         </div>
       </div>
     </div>
   </div>
-<!-- </body>
- --></template>
+</template>
 
 <script>
 import axios from 'axios';

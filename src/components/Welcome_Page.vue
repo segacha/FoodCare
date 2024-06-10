@@ -2,15 +2,13 @@
   <header>
     <nav class="navbar">
       <div class="logo">
-        <a href="#">
+        <a href="">
           FoodCare
         </a>
       </div>
       <ul class="menu">
         <li><a href="#">Home</a></li>
-        <li><a href="#">Latest</a></li>
-        <li><a href="#">Offers</a></li>
-        <li><a href="#">Services</a></li>
+        <li><a href="#">Service</a></li>
         <li><a href="#">Contact</a></li>
       </ul>
       <div class="buttons">
@@ -19,15 +17,15 @@
       </div>
     </nav>
     <div class="text-content">
-      <h2>Your Food,<br>Your Future</h2>
-      <h1>WELCOME PAGE</h1>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laborum facere in nam, officiis aspernatur
-        consectetur aliquid sequi possimus et. Sint.</p>
+      <img src="../assets/logo.png" alt="">
+      <div class = "text-info">
+        <h1>Your Food,<br>Your Future</h1>
+        <p>FoodCare helps you find and manage fresh groceries easily. On this page, you can view supermarket items, upload product images,
+           and keep track of your favorite products. Welcome to a simpler way to care for your food!</p>
+      </div>
     </div>
     <div class="play-button"></div>
   </header>
-  <!--   </body>
- -->
 </template>
 
 <script>
@@ -68,9 +66,16 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
 
-/*When selected with the mouse*/
+/* General Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Rubik, sans-serif;
+}
+
 ::selection {
   color: #f2f2f2;
   background: #000000;
@@ -105,11 +110,17 @@ header .navbar {
   flex-wrap: wrap;
 }
 
+.navbar img {
+  height: 100px;
+  width: 120px;
+  align-self: left;
+}
+
 .navbar .logo a {
   text-decoration: none;
-  font-size: 22px;
+  font-size: 45px;
   color: #000;
-  font-weight: 500;
+  font-weight: 750;
 }
 
 .navbar .menu li {
@@ -148,53 +159,37 @@ header .navbar {
 }
 
 header .text-content {
-  width: 40%;
-  margin: 100px 0 0 50px;
+  margin: 65px 0 0 50px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
 }
 
-.text-content h2 {
+.text-content img {
+  height: auto;
+  width: 100%;
+  max-width: 300px;
+  margin-right: 20px;
+}
+
+.text-content .text-info {
+  width: 100%;
+  max-width: 500px;
+  margin-top: 20px;
+}
+
+.text-content .text-info h2 {
   font-size: 27px;
   font-weight: 600;
 }
 
-.text-content p {
+.text-content .text-info p {
   font-size: 15px;
   margin-top: 10px;
 }
 
-header .play-button {
-  position: absolute;
-  right: 50px;
-  bottom: 40px;
-}
-
-.play-button .play {
-  font-size: 18px;
-  font-weight: 500;
-}
-
-.play-button .play::before {
-  content: '';
-  position: absolute;
-  height: 3px;
-  width: 50px;
-  top: 50%;
-  transform: translateY(-50%);
-  left: -58px;
-  background: #000;
-}
-
-.play-button i {
-  height: 40px;
-  width: 40px;
-  border: 2px solid #000;
-  line-height: 38px;
-  text-align: center;
-  margin-left: 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
+/* Media Queries for Responsive Design */
 @media (max-width: 850px) {
   header .navbar {
     flex-direction: column;
@@ -208,16 +203,24 @@ header .play-button {
   }
 
   header .text-content {
-    margin: 30px 0 0 20px;
+    margin: auto;
     width: 70%;
+    width: 100%; 
+    justify-content: center; 
+    text-align: center; 
   }
 
-  header .text-content h2 {
-    font-size: 20px;
+  .text-content .text-info {
+    width: 100%;
+    max-width: 500px;
+    margin-top: 20px;
+    justify-content: center; 
+    text-align: center; 
   }
+
 }
 
-@media (max-width: 410px) {
+@media (max-width: 389px) {
   header {
     height: 100vh;
     width: 100%;
@@ -227,5 +230,18 @@ header .play-button {
   header .navbar {
     padding: 15px 10px;
   }
+
+  header .text-content {
+    margin: 20px 10px;
+  }
+
+  header .text-content h2 {
+    font-size: 18px;
+  }
+
+  .text-content .text-info p {
+    font-size: 13px;
+  }
+
 }
 </style>
