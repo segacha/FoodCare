@@ -1,4 +1,5 @@
 <template>
+  <body>
   <header>
     <nav class="navbar">
       <div class="logo">
@@ -11,7 +12,6 @@
         <li><a href="#">Contact</a></li>
       </ul>
       <div class="buttons">
-        <!--TODO: navigateToLogout-->
         <input type="button" value="LogOut" @click="navigateToLogout" />
       </div>
     </nav>
@@ -21,9 +21,9 @@
       </div>  
       <section class="supermarket-list">
         <h2>Products 🛒</h2>
-      <ul v-if="user">
+        <ul v-if="user">
           <li v-for="product in user.products" :key="product._id">{{ product.name }} - {{ product.expiring_date }}</li>
-      </ul>
+        </ul>
       </section>
     </div>
     <div class="upload-button">
@@ -35,33 +35,19 @@
       <p v-if="message">{{ message }}</p>
     </div>
   </header>
+  </body>
 </template>
 
 <script>
-import { ref, toRefs } from 'vue';
+import { ref } from 'vue';
 import axios from 'axios';
+import { store } from '../store';
 
 export default {
   name: "HomePage",
-  props: {
-    user: {
-      type: Object,
-      required: true,
-      validator: (value) => {
-        return (
-          typeof value._id === 'string' &&
-          typeof value.firstname === 'string' &&
-          typeof value.lastname === 'string' &&
-          typeof value.email === 'string' &&
-          typeof value.password === 'string' &&
-          Array.isArray(value.products) &&
-          typeof value.__v === 'number'
-        );
-      },
-    },
-  },
-  setup(props, { emit }) {
-    const { user } = toRefs(props);
+  setup() {
+    const user = store.user;
+    console.log(user.email);
     const selectedFile = ref(null);
     const message = ref('');
 
@@ -76,6 +62,7 @@ export default {
         selectedFile.value = null; //Reset
       }
     };
+
     const uploadImage = async () => {
       if (!selectedFile.value) {
         message.value = 'Please select an image file first';
@@ -84,8 +71,7 @@ export default {
 
       const formData = new FormData();
       formData.append('image', selectedFile.value);
-      formData.append('userId', user.value._id); //Adds UserID
-
+      formData.append('userId', user._id); //Adds UserID
 
       try {
         await axios.post('http://localhost:3000/api/upload', formData, {
@@ -94,24 +80,29 @@ export default {
           },
         });
         message.value = 'Image uploaded successfully';
-        emit('user-updated'); 
+        // Emitir un evento o realizar alguna acción para actualizar el usuario
       } catch (error) {
         console.error('Error uploading image:', error);
         message.value = 'Error uploading image';
       }
     };
 
+    const navigateToLogout = () => {
+      store.setUser(null); // Limpiar el usuario en el almacén
+      this.$router.push('/'); // Navegar a la página de bienvenida
+    };
+
     return {
+      user,
       onFileChange,
       uploadImage,
       selectedFile,
-      message
+      message,
+      navigateToLogout
     };
   },
 };
 </script>
-
-
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
@@ -121,6 +112,13 @@ export default {
   padding: 0;
   box-sizing: border-box;
   font-family: 'Rubik';
+}
+
+body{
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  background-image: linear-gradient(135deg, #a9c05c 20%, #2da852 100%);
 }
 
 /*When selected with the mouse*/

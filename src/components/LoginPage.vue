@@ -1,4 +1,5 @@
 <template>
+<body>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <div class="container" id="container">
     <!-- Sign up -->
@@ -50,16 +51,17 @@
       </div>
     </div>
   </div>
+</body>
 </template>
 
 <script>
 import axios from 'axios';
+import { store } from '../store';
 
-axios.defaults.baseURL = 'http://localhost:3000/api';//Testing
+axios.defaults.baseURL = 'http://localhost:3000/api'; //Testing
 
 export default {
   name: 'AuthPage',
-  emits: ['share_user', 'switch_to_home_page'],
   data() {
     return {
       registerUser: {
@@ -74,25 +76,9 @@ export default {
       },
       loading: false,
       error: null,
-      switch_to_home_page: false
     };
   },
   methods: {
-    async share_user()
-    {
-      try
-      {
-        const email = this.loginUser.email;
-        const api_url = "http://localhost:3000/api/foodcare/get_user_by_email/" + email;
-        const response = await axios.get(api_url);
-        console.log("user is: " + response.data.user.firstname);
-        this.$emit('share_user', response.data.user);
-      }
-      catch(error)
-      {
-        console.log("we had error while trying to share the user in LoginPage: " + error);
-      }
-    },
     switchToLogin() {
       const container = document.getElementById('container');
       container.classList.remove('active');
@@ -105,7 +91,6 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        console.log(this.registerUser)
         const response = await axios.post("http://localhost:3000/api/foodcare/create_user", this.registerUser);
         const data = response.data;
         if (data.status) {
@@ -130,13 +115,9 @@ export default {
         const data = response.data;
         if (data.status) {
           alert('Login Successfully');
-
-          await this.share_user();
-          this.switch_to_home_page = true;
-          
-          this.$emit('switch_to_home_page', this.switch_to_home_page);
-          
-          this.switch_to_home_page = false;
+          store.setUser(data.user); // Guardar el usuario en el almacén
+          console.log(data.user)
+          this.$router.push('/home'); // Navegar a la página de inicio
         } else {
           alert('Login Failed');
         }
@@ -158,7 +139,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 
@@ -167,6 +147,16 @@ export default {
     padding: 0; 
     box-sizing: border-box; /*Easier to work with*/
     font-family: 'Montserrat', sans-serif; 
+}
+
+body{
+  background-color: #c9d6ff;
+  background: linear-gradient(to right, #e2e2e2, #daffc9);
+  display: flex;    
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100vh; 
 }
 
 .container{

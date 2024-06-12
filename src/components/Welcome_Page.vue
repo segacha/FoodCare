@@ -1,62 +1,46 @@
 <template>
-  <header>
-    <nav class="navbar">
-      <div class="logo">
-        <a href="">FoodCare</a>
+  <body>
+    <header>
+      <nav class="navbar">
+        <div class="logo">
+          <a href="">FoodCare</a>
+        </div>
+        <ul class="menu">
+          <li><a href="#">Home</a></li>
+          <li><a href="#">Service</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+        <div class="buttons">
+          <input type="button" value="Login" @click="goToLogin" />
+          <input type="button" value="Register" @click="goToLogin" />
+        </div>
+      </nav>
+      <div class="text-content">
+        <img src="../assets/logo.png" alt="">
+        <div class = "text-info">
+          <h1>Your Food,<br>Your Future!</h1>
+          <p>
+            FoodCare helps you find and manage fresh groceries easily. On this page, 
+            you can view supermarket products, upload them as images
+            and keep track of your favorite products so they don't go to waste. 
+            Welcome to a simpler way to care for your food!
+          </p>
+        </div>
       </div>
-      <ul class="menu">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Service</a></li>
-        <li><a href="#">Contact</a></li>
-      </ul>
-      <div class="buttons">
-        <input type="button" value="Login" @click="login_register_clicked" />
-        <input type="button" value="Register" @click="login_register_clicked" />
-      </div>
-    </nav>
-    <div class="text-content">
-      <img src="../assets/logo.png" alt="">
-      <div class = "text-info">
-        <h1>Your Food,<br>Your Future!</h1>
-        <p>
-          FoodCare helps you find and manage fresh groceries easily. On this page, 
-           you can view supermarket products, upload them as images
-           and keep track of your favorite products so they don't go to waste. 
-           Welcome to a simpler way to care for your food!
-        </p>
-      </div>
-    </div>
-  </header>
+    </header>
+  </body>
 </template>
 
 <script>
 export default {
-  data()
-  {
-    return {
-      is_login_register_clicked: false
+  methods: {
+    goToLogin() {
+      this.$router.push('/login');
     }
-  },
-  methods:
-  {
-    login_register_clicked()
-    {
-      this.is_login_register_clicked = true
-      this.$emit('login_register_clicked', this.is_login_register_clicked);
-      this.is_login_register_clicked = false
-    }
-  },
-  setup()
-  {
-    const title = ("Food Care"); 
- 
-    return {
-      title,
-
-    };
   }
 };
 </script>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
@@ -66,6 +50,15 @@ export default {
   padding: 0;
   box-sizing: border-box;
   font-family: Rubik, sans-serif;
+}
+
+body{
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  background-image: linear-gradient(135deg, #a9c05c 20%, #2da852 100%);
+  justify-content: center;
+  align-items: center;
 }
 
 ::selection {
