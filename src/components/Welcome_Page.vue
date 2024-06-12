@@ -2,9 +2,7 @@
   <header>
     <nav class="navbar">
       <div class="logo">
-        <a href="">
-          FoodCare
-        </a>
+        <a href="">FoodCare</a>
       </div>
       <ul class="menu">
         <li><a href="#">Home</a></li>
@@ -19,18 +17,19 @@
     <div class="text-content">
       <img src="../assets/logo.png" alt="">
       <div class = "text-info">
-        <h1>Your Food,<br>Your Future</h1>
-        <p>FoodCare helps you find and manage fresh groceries easily. On this page, you can view supermarket items, upload product images,
-           and keep track of your favorite products. Welcome to a simpler way to care for your food!</p>
+        <h1>Your Food,<br>Your Future!</h1>
+        <p>
+          FoodCare helps you find and manage fresh groceries easily. On this page, 
+           you can view supermarket products, upload them as images
+           and keep track of your favorite products so they don't go to waste. 
+           Welcome to a simpler way to care for your food!
+        </p>
       </div>
     </div>
-    <div class="play-button"></div>
   </header>
 </template>
 
 <script>
-//import { useRouter } from 'vue-router'; // Import useRouter for programmatic navigation
-console.log("we are in welcome page");
 export default {
   data()
   {
@@ -42,15 +41,9 @@ export default {
   {
     login_register_clicked()
     {
-      //give the oppiste value
       this.is_login_register_clicked = true
-
-      //wir emit mit der event login_register_clicked, und geben is_login.. weiter ab
       this.$emit('login_register_clicked', this.is_login_register_clicked);
-
-      //rest the value
       this.is_login_register_clicked = false
-
     }
   },
   setup()
@@ -68,7 +61,6 @@ export default {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
 
-/* General Styles */
 * {
   margin: 0;
   padding: 0;
@@ -80,7 +72,7 @@ export default {
   color: #f2f2f2;
   background: #000000;
 }
-
+/*Glassmorphism*/
 header {
   height: 85vh;
   width: 90%;
@@ -92,7 +84,6 @@ header {
   z-index: 12;
   border-radius: 25px;
   margin: auto;
-  position: relative;
 }
 
 header .navbar {
@@ -189,7 +180,7 @@ header .text-content {
   margin-top: 10px;
 }
 
-/* Media Queries for Responsive Design */
+/* Media for Responsive Design */
 @media (max-width: 850px) {
   header .navbar {
     flex-direction: column;

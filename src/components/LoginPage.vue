@@ -1,7 +1,7 @@
 <template>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <div class="container" id="container">
-    <!-- Sign-up form container -->
+    <!-- Sign up -->
     <div class="form-container sign-up">
       <form @submit.prevent="register">
         <h1>Create Account</h1>
@@ -18,7 +18,7 @@
         <button type="submit">SIGN UP</button>
       </form>
     </div>
-    <!-- Sign-in form container -->
+    <!-- Sign in -->
     <div class="form-container sign-in">
       <form @submit.prevent="login">
         <h1>Sign In</h1>
@@ -34,7 +34,7 @@
         <button type="submit">SIGN IN</button>
       </form>
     </div>
-    <!-- Toggle container for switching between sign-in and sign-up -->
+    <!-- Toggle container for switching between sign in and sign up -->
     <div class="toggle-container">
       <div class="toggle">
         <div class="toggle-panel toggle-left">
@@ -44,7 +44,7 @@
         </div>
         <div class="toggle-panel toggle-right">
           <h1>Hello, Foodie!</h1>
-          <p>Register with your personal details and start saving</p>
+          <p>Register with your personal details and start!</p>
           <button class="hidden" id="register" @click="switchToRegister">SIGN UP</button>
         </div>
       </div>
@@ -54,9 +54,8 @@
 
 <script>
 import axios from 'axios';
-console.log("we are in login page")
 
-axios.defaults.baseURL = 'http://localhost:3000/api';
+axios.defaults.baseURL = 'http://localhost:3000/api';//Testing
 
 export default {
   name: 'AuthPage',
@@ -81,13 +80,9 @@ export default {
   methods: {
     async share_user()
     {
-      //share_user is the event name
-      //LoginUser ist was wir zu den Eltern comonent weitergeben moechten
       try
       {
-        console.log("we are in the share_user in LoginPage")
         const email = this.loginUser.email;
-        console.log("email is: " + email);
         const api_url = "http://localhost:3000/api/foodcare/get_user_by_email/" + email;
         const response = await axios.get(api_url);
         console.log("user is: " + response.data.user.firstname);
@@ -97,7 +92,6 @@ export default {
       {
         console.log("we had error while trying to share the user in LoginPage: " + error);
       }
-
     },
     switchToLogin() {
       const container = document.getElementById('container');
@@ -139,9 +133,9 @@ export default {
 
           await this.share_user();
           this.switch_to_home_page = true;
-          //emit event heisst: "switch_to_home_page", und geben den wert weiter ab
+          
           this.$emit('switch_to_home_page', this.switch_to_home_page);
-          //reverse wert
+          
           this.switch_to_home_page = false;
         } else {
           alert('Login Failed');
@@ -164,30 +158,23 @@ export default {
 };
 </script>
 
-<style scoped>
-
-.form-control {
-  margin-bottom: 10px;
-}
-</style>
-
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 *{
-    margin: 0; /* Reset margin */
-    padding: 0; /* Reset padding */
-    box-sizing: border-box; /* Include padding and border in element's total width and height */
-    font-family: 'Montserrat', sans-serif; /* Set font family */
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; /*Easier to work with*/
+    font-family: 'Montserrat', sans-serif; 
 }
 
 .container{
     background-color: #fff;
-    border-radius: 30px; /* Rounded corners */
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35); /* Box shadow */
+    border-radius: 30px; 
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
     position: relative;
-    overflow: hidden; /* Hide overflow */
+    overflow: hidden;
     width: 768px;
     max-width: 100%;
     min-height: 480px;
@@ -211,21 +198,21 @@ export default {
 }
 
 .container button{
-    background-color: #2da83b; /* Button background color */
-    color: #fff; /* Button text color */
+    background-color: #2da83b; 
+    color: #fff;
     font-size: 12px;
     padding: 10px 45px;
     border: 1px solid transparent;
-    border-radius: 8px; /* Rounded corners */
+    border-radius: 8px; 
     font-weight: 600;
-    letter-spacing: 0.5px; /* Letter spacing */
+    letter-spacing: 0.5px; 
     margin-top: 10px;
-    cursor: pointer; /* Pointer cursor on hover */
+    cursor: pointer;
 }
 
 .container button.hidden{
-    background-color: transparent; /* Transparent background */
-    border-color: #fff; /* White border */
+    background-color: transparent; 
+    border-color: #fff; 
 }
 
 .container form{
@@ -244,9 +231,9 @@ export default {
     margin: 8px 0;
     padding: 10px 15px;
     font-size: 13px;
-    border-radius: 8px; /* Rounded corners */
+    border-radius: 8px; 
     width: 100%;
-    outline: none; /* Remove outline */
+    outline: none;
 }
 
 .form-container{
@@ -274,9 +261,8 @@ export default {
 .container.active .sign-up{
     transform: translateX(100%);
     z-index: 5;
-    animation: move 0.6s;
+    animation: move 0,7s;
 }
-
 @keyframes move{
     0%, 49.99%{
         z-index: 1;
@@ -312,16 +298,15 @@ export default {
     border-radius: 150px 0 0 100px;
     z-index: 1000;
 }
-
+/* Whole Container if register true*/
 .container.active .toggle-container{
     transform: translateX(-100%);
     border-radius: 0 150px 100px 0;
 }
 
 .toggle{
-    background-color: #512da8;
     height: 100%;
-    background: linear-gradient(to right, #a9c05c, #2da852); /* Background gradient */
+    background: linear-gradient(to right, #a9c05c, #2da852); 
     color: #fff;
     position: relative;
     left: -100%;

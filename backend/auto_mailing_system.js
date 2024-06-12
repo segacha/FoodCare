@@ -126,7 +126,6 @@ async function send_email(user, user_products_list)
 
   //erzeugen produkte und den entsprechended ics_file
   const products = await get_user_products(user_id);
-  console.log("we are above the ics_management");
   await ics_management.make_ics_file(products);
   //we need to add attachment aka the events.ics
   const mail_option =

@@ -14,8 +14,6 @@ npm install cors --save
 
 npm install axios --save
 
-npm install router --save
-
 npm install simple-encryptor --save
 
 npm install nodemailer --save

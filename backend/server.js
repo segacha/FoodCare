@@ -5,12 +5,12 @@ const multer = require('multer');
 const fs = require('fs');
 const OpenAI = require('openai');
 require('dotenv').config();
-const Response = require('../src/models/response.js'); 
 const User = require("../src/models/user/userModel.js");
 const Product = require("../src/models/Product/product.js");
 const auto_mailing_system = require("./auto_mailing_system.js");
 const { stringify } = require('querystring');
 const prompt = require('prompt-sync')();
+
 
 const app = express();
 const PORT = 3000;
@@ -42,6 +42,7 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
+
 const upload = multer({ storage: storage });
 
 // Middlewares
@@ -166,8 +167,6 @@ app.post('/api/foodcare/create_user/', async (req, res) =>
   
   const key = "123456789trytryrtry";
   const encryptor = require("simple-encryptor")(key);
-  console.log("we are in the create user");
-  console.log("req is: " + req.body.firstname)
   try
   {
     const user = new User({
@@ -186,12 +185,13 @@ app.post('/api/foodcare/create_user/', async (req, res) =>
   }
 });
 
+//GET USER BY EMAIL
 app.get('/api/foodcare/get_user_by_email/:user_email', async (req, res) =>
 {
   const email = req.params.user_email;
   try
   {
-    //und nochmal papulate um die tatsaechliche produkte zu haben und nicht ihre IDs
+    //Fetch products by products IDs 
     const user = await User.findOne({ "email": email }).populate('products').exec();
     if (!user)
     {
@@ -201,12 +201,36 @@ app.get('/api/foodcare/get_user_by_email/:user_email', async (req, res) =>
 
   } catch (error)
   {
-    console.error('ehere was some kind error getting the user:', error);
+    console.error('Here was some kind error getting the user:', error);
     res.status(500).send('Internal Server Error');
   }
 });
 
-// Ruta para obtener productos de un usuario
+//GET USER LOGIN
+app.get('/api/foodcare/login/', async (req, res) => {
+
+  const key = "123456789trytryrtry";
+  const encryptor = require("simple-encryptor")(key);
+  const email = req.params.user_email;
+  try {
+    const user = await User.findOne({ email }).populate('products').exec();
+    const password = user.password;
+    if (!user) {
+      return res.status(404).send('We couldn\'t find a user with the given email!');
+    }
+    const decryptedPassword = encryptor.decrypt(user.password);
+    if (decryptedPassword === password) {
+      res.send({ status: true, msg: "User validated successfully", user });
+    } else {
+      res.status(401).send('Invalid password');
+    }
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+//GET PRODUCT BY USE ID
 app.get('/api/foodcare/get_products/:userId', async (req, res) =>
 {
   const { userId } = req.params;

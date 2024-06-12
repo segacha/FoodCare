@@ -11,6 +11,7 @@
         <li><a href="#">Contact</a></li>
       </ul>
       <div class="buttons">
+        <!--TODO: navigateToLogout-->
         <input type="button" value="LogOut" @click="navigateToLogout" />
       </div>
     </nav>
@@ -31,7 +32,7 @@
         <input id="file-upload" type="file" @change="onFileChange" />
         <button type="submit">Upload Image</button>
       </form>
-  <p v-if="message">{{ message }}</p>
+      <p v-if="message">{{ message }}</p>
     </div>
   </header>
 </template>
@@ -64,15 +65,15 @@ export default {
     const selectedFile = ref(null);
     const message = ref('');
 
-    const onFileChange = (event) => { // Cambiado a función flecha
+    const onFileChange = (event) => {
       const fileInput = event.target;
       const label = fileInput.previousElementSibling;
       if (fileInput.files && fileInput.files.length > 0) {
         label.classList.add('selected');
-        selectedFile.value = fileInput.files[0]; // Asignar el archivo seleccionado
+        selectedFile.value = fileInput.files[0];
       } else {
         label.classList.remove('selected');
-        selectedFile.value = null; // Resetear el archivo seleccionado
+        selectedFile.value = null; //Reset
       }
     };
     const uploadImage = async () => {
@@ -83,17 +84,16 @@ export default {
 
       const formData = new FormData();
       formData.append('image', selectedFile.value);
-      formData.append('userId', user.value._id); // Añadir el ID del usuario
+      formData.append('userId', user.value._id); //Adds UserID
 
 
       try {
-        const response = await axios.post('http://localhost:3000/api/upload', formData, {
+        await axios.post('http://localhost:3000/api/upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
-        message.value = 'Image uploaded successfully: ' + response.data.message;
-        console.log('Image uploaded successfully:', response.data);
+        message.value = 'Image uploaded successfully';
         emit('user-updated'); 
       } catch (error) {
         console.error('Error uploading image:', error);
@@ -129,6 +129,7 @@ export default {
   background: #000000;
 }
 
+/*Glassmorphism*/
 header {
   height: 85vh;
   width: 70%;
@@ -276,14 +277,14 @@ header .content h1 {
   transition: all 0.3s ease;
   background-color: #fff;
   color: #2da852;
-  display: inline-block; /* Label wird als eine Button funktioniert */
+  display: inline-block;
 }
 
 .custom-file-upload:hover {
   background-color: #000;
   color: #fff;
 }
-
+/* While selected, for better user expirience */
 .custom-file-upload.selected {
   background-color: #2da852;
   color: #fff;
