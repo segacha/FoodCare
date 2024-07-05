@@ -8,8 +8,10 @@ require('dotenv').config();
 const User = require("../src/models/user/userModel.js");
 const Product = require("../src/models/Product/product.js");
 const auto_mailing_system = require("./auto_mailing_system.js");
+const ams = require("./AMS20.js");
 const { stringify } = require('querystring');
 const prompt = require('prompt-sync')();
+const axios = require('axios');
 
 
 const app = express();
@@ -206,6 +208,101 @@ app.get('/api/foodcare/get_user_by_email/:user_email', async (req, res) =>
   }
 });
 
+//einen beispiel wie man diesem api, in der test() func zu sehen.
+app.delete('/api/foodcare/delete_product/', async (req, res) =>
+{
+  //console.log("body is: " + req)
+  //const email = req.body.user_email;
+  try
+  {
+    //Fetch products by products IDs 
+    const product = await Product.findByIdAndDelete(req.body._id);
+    if (!product)
+    {
+      console.error("we couldnt fine the product...");
+      res.status(404).send('product not found!');
+    }
+    console.log("the deleted product name is: " + product.name)
+
+    res.send({ status: true, msg: "product is successfully deleted" })
+    console.log("PRODUCT GOT DELTED")
+
+  } catch (error)
+  {
+    console.error('there was some error while deleting a product:\n', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+test();
+async function test()
+{
+  const product =//668559319647b2b1e799027f
+  {
+    name: "one month food",
+    preis: "99,99",
+    expiring_date: "02.08.2024",
+    receiving_date: "month",
+    email_receiving_date: null
+  };
+  const product2 =//668558c1f169860cab23c9c4
+  {
+    name: "one week food",
+    preis: "99,99",
+    expiring_date: "10.07.2024",
+    receiving_date: "week",
+    email_receiving_date: null
+  };
+
+  const product3 =//668558f2f9e185ccf74990cd
+  {
+    name: "three days food",
+    preis: "99,99",
+    expiring_date: "06.07.2024",
+    receiving_date: "three_days",
+    email_receiving_date: null
+  };
+
+  /**so sollte einen produkt spaeter im fortend gespeichert */
+
+  /**ich glaube wir sollen 'get_date_object' in fortend implementieren */
+  //date_obj = ams.get_date_obj(product.expiring_date);
+  //product.email_receiving_date = new Date(date_obj);
+
+  /**hier wir haben "-30" weil der user 30 tage vor der datumablauf einen email bekommen
+   * hatte er 'eine woche davor' ausgeaehlt, dann sollte "-7"
+   * und wenn drei tage davor dann sollte "-3"
+   */
+  //product.email_receiving_date.setDate(date_obj.getDate() - 30);
+  //console.log("date product rechieving date = " + (product.email_receiving_date));
+
+  /**fuer testing habe ich diesem user ausgesucht, um die produkt bei ihm zu speichern */
+  //const user = await User.findById("665f19bf26c24abf3956b267").exec();
+  //if (!user)
+  //{
+  //  return res.status(404).send('We couldn\'t find a user with this ID!');
+  //}
+
+  /**prodkte in DB speichern */
+  //const new_product = new Product(product);
+  //await new_product.save();
+  //console.log("we add a new prodcut to the db: " + new_product._id);
+  //
+  //user.products.push(new_product._id);
+  //await user.save();
+  //console.log("the product is added to the user!")
+
+  /**loeschen einen produkt */
+  /* const product = await Product.findById("6668543f02160a5e9317affe");
+  if (!product)
+  {
+    console.log("we didnt find the product..");
+    return;
+  }
+  const response = await axios.delete("http://localhost:3000/api/foodcare/delete_product", { data: product });
+ */
+}
+
 //GET USER LOGIN
 app.get('/api/foodcare/login/', async (req, res) => {
 
@@ -275,7 +372,8 @@ app.post('/api/foodcare/add_product/:userId', async (req, res) =>
 });
 
 //Automating mail system checking the expiring date of all the Products
-auto_mailing_system.daily_expiring_date_checks();
+//auto_mailing_system.daily_expiring_date_checks();
+ams.daily_expiring_date_checks();
 
 //Error Handling
 app.use((err, req, res, next) =>

@@ -249,4 +249,4 @@ async function get_user_products(user_id)
   return products;
 }
 
-module.exports = { daily_expiring_date_checks };
+module.exports = { daily_expiring_date_checks, get_date_obj };
