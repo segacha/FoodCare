@@ -1,66 +1,135 @@
 <template>
   <body>
-  <header>
-    <nav class="navbar">
-      <div class="logo">
-        <img src="../assets/logo.png" alt="">
-        <a href="#">FoodCare</a>
-      </div>
-      <ul class="menu">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Services</a></li>
-        <li><a href="#">Contact</a></li>
-      </ul>
-      <div class="buttons">
-        <input type="button" value="LogOut" @click="navigateToLogout" />
-      </div>
-    </nav>
-    <div class="content">
-      <div v-if="user">
-        <h1>Welcome, {{ user.firstname }}!</h1>
-      </div>  
-      <section class="supermarket-list">
-        <h2>Products 🛒</h2>
-        <ul v-if="user">
-          <li v-for="product in user.products" :key="product._id">{{ product.name }} - {{ product.expiring_date }}</li>
+    <header>
+      <nav class="navbar">
+        <div class="logo">
+          <img src="../assets/logo.png" alt="">
+          <a href="#">FoodCare</a>
+        </div>
+        <ul class="menu">
+          <li><a href="#">Home</a></li>
+          <li><a href="#">Services</a></li>
+          <li><a href="#">Contact</a></li>
         </ul>
-      </section>
-    </div>
-    <div class="upload-button">
-      <form @submit.prevent="uploadImage">
-        <label for="file-upload" class="custom-file-upload">Choose File</label>
-        <input id="file-upload" type="file" @change="onFileChange" />
-        <button type="submit">Upload Image</button>
-      </form>
-      <p v-if="message">{{ message }}</p>
-    </div>
-  </header>
+        <div class="buttons">
+          <input type="button" value="LogOut" @click="navigateToLogout" />
+        </div>
+      </nav>
+      <div class="content">
+        <div v-if="user">
+          <h1>Welcome, {{ user.firstname }}!</h1>
+        </div>  
+        <section class="supermarket-list">
+          <h2>Products 🛒</h2>
+          <ul v-if="user">
+            <li v-for="product in user.products" :key="product._id">{{ product.name }} - {{ product.expiring_date }}</li>
+          </ul>
+        </section>
+      </div>
+      <div class="upload-button">
+        <form @submit.prevent="uploadImage">
+          <label for="file-upload" class="custom-file-upload">Choose File</label>
+          <input id="file-upload" type="file" @change="onFileChange" />
+          <button type="submit">Upload Image</button>
+        </form>
+        <p v-if="message">{{ message }}</p>
+      </div>
+      <ModalPage :isVisible="isModalVisible" @close="isModalVisible = false">
+        <h2>Set Expiry Dates for Products</h2>
+        <div v-for="(product, index) in products" :key="index" class="product-input">
+          <label>Product Name: {{ product.name }}</label>
+          <input type="date" v-model="product.expiring_date" placeholder="Enter expiring date" />
+        </div>
+        <button @click="confirmExpiryDates">Confirm</button>
+      </ModalPage>
+    </header>
   </body>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import axios from 'axios';
 import { store } from '../store';
+import { useRouter } from 'vue-router';
+import ModalPage from '../components/ModalPage.vue';
 
 export default {
   name: "HomePage",
+  components: {
+    ModalPage
+  },
   setup() {
-    const user = store.user;
-    console.log(user.email);
+    const user = ref(store.user || JSON.parse(localStorage.getItem('user')));
     const selectedFile = ref(null);
     const message = ref('');
+    const products = ref([]);
+    const isModalVisible = ref(false);
+    const router = useRouter();
 
-    const onFileChange = (event) => {
+    watch(() => store.user, (newUser) => {
+      user.value = newUser;
+      if (newUser) {
+        localStorage.setItem('user', JSON.stringify(newUser));
+      }
+    });
+
+    const fetchUserProducts = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/api/foodcare/get_user/${user.value._id}`);
+        if (response.data) {
+          store.setUser(response.data); // Actualizar el usuario en el almacén
+        }
+      } catch (error) {
+        console.error('Error fetching user products:', error);
+      }
+    };
+
+    onMounted(() => {
+      if (user.value) {
+        fetchUserProducts();
+      }
+    });
+
+    const onFileChange = async (event) => {
       const fileInput = event.target;
       const label = fileInput.previousElementSibling;
       if (fileInput.files && fileInput.files.length > 0) {
         label.classList.add('selected');
         selectedFile.value = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('image', selectedFile.value);
+
+        try {
+          const response = await axios.post('http://localhost:3000/api/process_image', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+
+          products.value = response.data.items.map(item => ({
+            name: item.name,
+            expiring_date: ''
+          }));
+          isModalVisible.value = true;
+        } catch (error) {
+          console.error('Error processing image:', error);
+          message.value = 'Error processing image';
+        }
       } else {
         label.classList.remove('selected');
-        selectedFile.value = null; //Reset
+        selectedFile.value = null; // Reset
       }
+    };
+
+    const confirmExpiryDates = async () => {
+      if (products.value.some(product => !product.expiring_date)) {
+        message.value = 'Please enter expiring dates for all products';
+        return;
+      }
+      isModalVisible.value = false;
+      // Update products in the user object
+      user.value.products = [...user.value.products, ...products.value];
+      await fetchUserProducts(); // Ensure products are up-to-date
     };
 
     const uploadImage = async () => {
@@ -69,9 +138,15 @@ export default {
         return;
       }
 
+      if (products.value.some(product => !product.expiring_date)) {
+        message.value = 'Please enter expiring dates for all products';
+        return;
+      }
+
       const formData = new FormData();
       formData.append('image', selectedFile.value);
-      formData.append('userId', user._id); //Adds UserID
+      formData.append('userId', user.value._id);
+      formData.append('products', JSON.stringify(products.value));
 
       try {
         await axios.post('http://localhost:3000/api/upload', formData, {
@@ -79,8 +154,8 @@ export default {
             'Content-Type': 'multipart/form-data',
           },
         });
-        message.value = 'Image uploaded successfully';
-        // Emitir un evento o realizar alguna acción para actualizar el usuario
+        message.value = 'Image and product data uploaded successfully';
+        await fetchUserProducts();
       } catch (error) {
         console.error('Error uploading image:', error);
         message.value = 'Error uploading image';
@@ -89,16 +164,20 @@ export default {
 
     const navigateToLogout = () => {
       store.setUser(null); // Limpiar el usuario en el almacén
-      this.$router.push('/'); // Navegar a la página de bienvenida
+      localStorage.removeItem('user'); // Remover usuario de localStorage
+      router.push('/'); // Navegar a la página de bienvenida
     };
 
     return {
       user,
       onFileChange,
+      confirmExpiryDates,
       uploadImage,
       selectedFile,
       message,
-      navigateToLogout
+      navigateToLogout,
+      products,
+      isModalVisible
     };
   },
 };

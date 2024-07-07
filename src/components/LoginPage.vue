@@ -1,5 +1,5 @@
 <template>
-<body>
+  <body>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <div class="container" id="container">
     <!-- Sign up -->
@@ -50,7 +50,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> 
 </body>
 </template>
 
@@ -58,7 +58,7 @@
 import axios from 'axios';
 import { store } from '../store';
 
-axios.defaults.baseURL = 'http://localhost:3000/api'; //Testing
+axios.defaults.baseURL = 'http://localhost:3000/api'; // Asegúrate de cambiar esto a la URL de tu backend
 
 export default {
   name: 'AuthPage',
@@ -76,17 +76,10 @@ export default {
       },
       loading: false,
       error: null,
+      switch_to_home_page: false
     };
   },
   methods: {
-    switchToLogin() {
-      const container = document.getElementById('container');
-      container.classList.remove('active');
-    },
-    switchToRegister() {
-      const container = document.getElementById('container');
-      container.classList.add('active');
-    },
     async register() {
       this.loading = true;
       this.error = null;
@@ -110,14 +103,18 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        const api_url = "http://localhost:3000/api/foodcare/get_user_by_email/" + this.loginUser.email; 
+        const api_url = `http://localhost:3000/api/foodcare/get_user_by_email/${this.loginUser.email}`; 
         const response = await axios.get(api_url);
         const data = response.data;
         if (data.status) {
           alert('Login Successfully');
-          store.setUser(data.user); // Guardar el usuario en el almacén
-          console.log(data.user)
-          this.$router.push('/home'); // Navegar a la página de inicio
+          
+          // Guardar usuario en localStorage
+          localStorage.setItem('user', JSON.stringify(data.user));
+          
+          store.setUser(data.user); // Guardar usuario en el store
+
+          this.$router.push('/home');
         } else {
           alert('Login Failed');
         }
@@ -127,6 +124,14 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    switchToLogin() {
+      const container = document.getElementById('container');
+      container.classList.remove('active');
+    },
+    switchToRegister() {
+      const container = document.getElementById('container');
+      container.classList.add('active');
     }
   },
   mounted() {

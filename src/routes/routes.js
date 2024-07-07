@@ -4,9 +4,10 @@ import LoginPage from '../components/LoginPage.vue';
 import WelcomePage from '../components/Welcome_Page.vue';
 
 const routes = [
-  { path: '/', component: WelcomePage },
+  { path: '/', component: WelcomePage }, 
   { path: '/login', component: LoginPage },
   { path: '/home', component: HomePage },
+  // otras rutas
 ];
 
 const router = createRouter({
@@ -15,3 +16,4 @@ const router = createRouter({
 });
 
 export default router;
+

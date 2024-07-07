@@ -57,14 +57,20 @@ app.get("/", (req, res) =>
   res.send("Server is running");
 });
 
-// ChatGPT API, Upload und Bearbeitung der Foto
+// ChatGPT API, Upload der Foto
 app.post('/api/upload', upload.single('image'), async (req, res) => {
-  const imagePath = req.file.path; 
-  const base64Image = fs.readFileSync(imagePath).toString('base64'); // Lesen und Umwandeln in base64
-  const userId = req.body.userId; // ID abgabe
+  const imagePath = req.file.path;
+  const base64Image = fs.readFileSync(imagePath).toString('base64'); // Leer y convertir a base64
+  const userId = req.body.userId; // ID del usuario
+  const products = req.body.products ? JSON.parse(req.body.products) : []; // Productos con fechas de caducidad
 
-  try
-  {
+  if (!products || products.length === 0) {
+    res.status(400).send('No products provided');
+    fs.unlinkSync(imagePath);
+    return;
+  }
+
+  try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -85,24 +91,22 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     });
 
     let jsonString = response.choices[0].message.content;
-    jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); //JSON file wurde gefiltert
-    const jsonData = JSON.parse(jsonString); 
+    jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); // Filtrar el archivo JSON
+    const jsonData = JSON.parse(jsonString);
 
-    if (Array.isArray(jsonData.items)) {  
+    if (Array.isArray(jsonData.items)) {
       const user = await User.findById(userId);
 
-      if (!user)
-      {
+      if (!user) {
         res.status(404).send('Usuario no encontrado');
         return;
       }
 
-      const productPromises = jsonData.items.map(async (item) => {
-        const expiring_date = prompt("Write the expiring date of this product: " + item.name+" ");
+      const productPromises = jsonData.items.map(async (item, index) => {
         const newProduct = new Product({
           name: item.name,
           preis: item.price,
-          expiring_date: expiring_date
+          expiring_date: products[index].expiring_date,
         });
 
         await newProduct.save();
@@ -114,18 +118,52 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
       await user.save();
 
       res.send('Todos los productos se han guardado correctamente.');
-    } else
-    {
+    } else {
       res.status(400).send('Datos inválidos: se esperaba un array');
     }
-
-
-  } catch (error)
-  {
+  } catch (error) {
     console.error('Error processing image:', error.response ? error.response.data : error.message);
     res.status(500).send('Internal Server Error');
   } finally {
-    fs.unlinkSync(imagePath); //Delete Foto after used
+    fs.unlinkSync(imagePath);
+  }
+});
+
+
+app.post('/api/process_image', upload.single('image'), async (req, res) => {
+  const imagePath = req.file.path;
+  const base64Image = fs.readFileSync(imagePath).toString('base64'); 
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Return JSON document with data. Only return JSON not other text. Give only items as array in the JSON in which each items has a name, price." },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${base64Image}`,
+                detail: "low"
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    let jsonString = response.choices[0].message.content;
+    jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); // Filtrar el archivo JSON
+    const jsonData = JSON.parse(jsonString);
+
+    res.json(jsonData);
+  } catch (error) {
+    console.error('Error processing image:', error.response ? error.response.data : error.message);
+    res.status(500).send('Internal Server Error');
+  } finally {
+    fs.unlinkSync(imagePath); // Borrar la foto después de usarla
   }
 });
 
