@@ -102,18 +102,22 @@ function get_date_obj(expiring_date)
   } else if (expiring_date.includes("."))
   {
     parts = expiring_date.split(".");
-  } else
+  } 
+  else if (expiring_date.includes("-"))
+  {
+    parts = expiring_date.split("-");
+  }else
   {
     throw new Error("Unsupported date format");
   }
 
   //wir gucken ob day bei den eingegebenen expiring date hat die groesse 2
   //wenn nicht, dann wir sollen '0' am anfang addieren
-  const day = parts[0].padStart(2, "0");
+  const day = parts[2].padStart(2, "0");
   const month = parts[1].padStart(2, "0");
   //angenommen, dass gegebene datum ist: 15,01,24
   //dann wir sollen '20' bei 24 addieren um '2024' zu haben
-  const year = parts[2].padStart(4, "20");
+  const year = parts[0].padStart(4, "20");
 
   const date_string = `${year}-${month}-${day}`;
   if (day > 31 || month > 12)

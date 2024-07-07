@@ -27,9 +27,9 @@
                 {{ product.name }} - {{ product.expiring_date }}
                 <select v-model="product.notification">
                   <option disabled value="">Notify me before</option>
-                  <option value="1">3 day</option>
-                  <option value="3">1 week</option>
-                  <option value="7">1 month</option>
+                  <option value="three_days">3 days</option>
+                  <option value="week">1 week</option>
+                  <option value="month">1 month</option>
                 </select>
                 <button class="delete-button" @click="removeProduct(product._id)">Delete</button>
               </li>
