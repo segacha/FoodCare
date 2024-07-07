@@ -21,26 +21,36 @@
         </div>  
         <section class="supermarket-list">
           <h2>Products 🛒</h2>
-          <ul v-if="user">
-            <li v-for="product in user.products" :key="product._id">{{ product.name }} - {{ product.expiring_date }}</li>
-          </ul>
+          <div class="product-list">
+            <ul v-if="user">
+              <li v-for="product in user.products" :key="product._id">
+                {{ product.name }} - {{ product.expiring_date }}
+                <select v-model="product.notification">
+                  <option disabled value="">Notify me before</option>
+                  <option value="1">3 day</option>
+                  <option value="3">1 week</option>
+                  <option value="7">1 month</option>
+                </select>
+                <button class="delete-button" @click="removeProduct(product._id)">Delete</button>
+              </li>
+            </ul>
+          </div>
+          <div class="button-group">
+            <button @click="cancelChanges">Cancel</button>
+            <button @click="saveChanges">Save Changes</button>
+          </div>
+          <p v-if="saveMessage" class="save-message">{{ saveMessage }}</p>
         </section>
       </div>
       <div class="upload-button">
         <form @submit.prevent="uploadImage">
-          <label for="file-upload" class="custom-file-upload">Choose File</label>
+          <label for="file-upload" class="custom-file-upload">Upload Image</label>
           <input id="file-upload" type="file" @change="onFileChange" />
-          <button type="submit">Upload Image</button>
+          <button type="submit">Confirm Image</button>
         </form>
         <p v-if="message">{{ message }}</p>
       </div>
-      <ModalPage :isVisible="isModalVisible" @close="isModalVisible = false">
-        <h2>Set Expiry Dates for Products</h2>
-        <div v-for="(product, index) in products" :key="index" class="product-input">
-          <label>Product Name: {{ product.name }}</label>
-          <input type="date" v-model="product.expiring_date" placeholder="Enter expiring date" />
-        </div>
-        <button @click="confirmExpiryDates">Confirm</button>
+      <ModalPage :isVisible="isModalVisible" :products="products" @close="isModalVisible = false" @remove-product="removeProductFromModal" @confirm="confirmExpiryDates">
       </ModalPage>
     </header>
   </body>
@@ -65,6 +75,7 @@ export default {
     const products = ref([]);
     const isModalVisible = ref(false);
     const router = useRouter();
+    const saveMessage = ref('');
 
     watch(() => store.user, (newUser) => {
       user.value = newUser;
@@ -108,7 +119,8 @@ export default {
 
           products.value = response.data.items.map(item => ({
             name: item.name,
-            expiring_date: ''
+            expiring_date: '',
+            notification: ''
           }));
           isModalVisible.value = true;
         } catch (error) {
@@ -122,8 +134,8 @@ export default {
     };
 
     const confirmExpiryDates = async () => {
-      if (products.value.some(product => !product.expiring_date)) {
-        message.value = 'Please enter expiring dates for all products';
+      if (products.value.some(product => !product.expiring_date || !product.notification)) {
+        message.value = 'Please enter expiring dates and notification time for all products';
         return;
       }
       isModalVisible.value = false;
@@ -138,8 +150,8 @@ export default {
         return;
       }
 
-      if (products.value.some(product => !product.expiring_date)) {
-        message.value = 'Please enter expiring dates for all products';
+      if (products.value.some(product => !product.expiring_date || !product.notification)) {
+        message.value = 'Please enter expiring dates and notification time for all products';
         return;
       }
 
@@ -162,6 +174,39 @@ export default {
       }
     };
 
+    const removeProduct = async (productId) => {
+      try {
+        const response = await axios.delete(`http://localhost:3000/api/foodcare/delete_product/${user.value._id}/${productId}`);
+        if (response.data) {
+          await fetchUserProducts();
+          message.value = 'Product removed successfully';
+        }
+      } catch (error) {
+        console.error('Error removing product:', error);
+        message.value = 'Error removing product';
+      }
+    };
+
+    const saveChanges = async () => {
+      try {
+        await axios.put(`http://localhost:3000/api/foodcare/update_products/${user.value._id}`, {
+          products: user.value.products
+        });
+        saveMessage.value = 'Changes saved successfully';
+        setTimeout(() => {
+          saveMessage.value = '';
+        }, 3000);
+        await fetchUserProducts();
+      } catch (error) {
+        console.error('Error saving changes:', error);
+        saveMessage.value = 'Error saving changes';
+      }
+    };
+
+    const cancelChanges = async () => {
+      await fetchUserProducts(); // Revert changes by re-fetching products from the server
+    };
+
     const navigateToLogout = () => {
       store.setUser(null); // Limpiar el usuario en el almacén
       localStorage.removeItem('user'); // Remover usuario de localStorage
@@ -177,7 +222,11 @@ export default {
       message,
       navigateToLogout,
       products,
-      isModalVisible
+      isModalVisible,
+      removeProduct,
+      saveChanges,
+      cancelChanges,
+      saveMessage
     };
   },
 };
@@ -309,12 +358,20 @@ header .content h1 {
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .supermarket-list h2 {
   font-size: 24px;
   font-weight: 600;
   margin-bottom: 20px;
+}
+
+.product-list {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .supermarket-list ul {
@@ -324,6 +381,58 @@ header .content h1 {
 .supermarket-list ul li {
   font-size: 16px;
   margin-bottom: 10px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+
+
+button.delete-button {
+  outline: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 12px;
+  padding: 6px 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-image: linear-gradient(135deg, #ff6666 10%, #c94747 100%);
+}
+
+button.delete-button:hover {
+  transform: scale(0.97);
+}
+
+
+.button-group button {
+  outline: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 12px;
+  padding: 6px 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-image: linear-gradient(135deg, #a9c05c 10%, #2da852 100%);
+}
+
+.button-group button:hover {
+  transform: scale(0.97);
+}
+
+.save-message {
+  text-align: right;
+  color: green;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 10px;
 }
 
 .upload-button {
