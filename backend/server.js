@@ -272,14 +272,41 @@ app.delete('/api/foodcare/delete_product/', async (req, res) =>
   }
 });
 
-test();
+app.put('/api/foodcare/update_products/', async (req, res) =>
+  {
+    try
+    {
+      const products = req.body;
+      //console.log("the prod are: " + JSON.stringify(products));
+      //for(const product of products.date)
+      //  {
+      //    console.log("the loop");
+      //    console.log(JSON.stringify(product));
+      //  }
+      const updated_products = await Promise.all(
+        products.data.map(async (product) => {//wir mach for each loop
+          return await Product.findByIdAndUpdate(product._id, { email_receiving_date: product.email_receiving_date }, { new: true });//true hier um nur die geupdatete produkte zurueck zu geben
+        })
+      );
+      console.log("products are updated now!")
+      res.json(updated_products)
+      // updatedDocs would contain the updated documents
+      } catch (error)
+    {
+      console.error('es gab problemen als wir die produkten update machen wollten:\n', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+  
+
+//test();
 async function test()
 {
   const product =//668559319647b2b1e799027f
   {
     name: "one month food",
     preis: "99,99",
-    expiring_date: "02.08.2024",
+    expiring_date: "2024-12-15",
     receiving_date: "month",
     email_receiving_date: null
   };
@@ -304,8 +331,8 @@ async function test()
   /**so sollte einen produkt spaeter im fortend gespeichert */
 
   /**ich glaube wir sollen 'get_date_object' in fortend implementieren */
-  //date_obj = ams.get_date_obj(product.expiring_date);
-  //product.email_receiving_date = new Date(date_obj);
+  date_obj = ams.get_date_obj(product.expiring_date);
+  product.email_receiving_date = new Date(date_obj);
 
   /**hier wir haben "-30" weil der user 30 tage vor der datumablauf einen email bekommen
    * hatte er 'eine woche davor' ausgeaehlt, dann sollte "-7"
@@ -315,17 +342,17 @@ async function test()
   //console.log("date product rechieving date = " + (product.email_receiving_date));
 
   /**fuer testing habe ich diesem user ausgesucht, um die produkt bei ihm zu speichern */
-  //const user = await User.findById("665f19bf26c24abf3956b267").exec();
+  //const user = await User.findById("668acf1baaff909a7cb348c9").exec();
   //if (!user)
   //{
   //  return res.status(404).send('We couldn\'t find a user with this ID!');
   //}
-
-  /**prodkte in DB speichern */
+//
+  ///**prodkte in DB speichern */
   //const new_product = new Product(product);
   //await new_product.save();
   //console.log("we add a new prodcut to the db: " + new_product._id);
-  //
+//
   //user.products.push(new_product._id);
   //await user.save();
   //console.log("the product is added to the user!")
@@ -427,11 +454,12 @@ app.listen(PORT, () =>
 });
 
 //TEST
-async function delete_garbge_products()
+//delete_products()
+async function delete_products()
 {
   try
   {
-    await Product.deleteMany({ expiring_date: '' });
+    await Product.deleteMany();
     console.log('Products with empty expiring_date deleted successfully');
   } catch (err)
   {

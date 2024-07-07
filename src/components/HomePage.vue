@@ -1,4 +1,5 @@
 <template>
+
   <body>
     <header>
       <nav class="navbar">
@@ -18,20 +19,20 @@
       <div class="content">
         <div v-if="user">
           <h1>Welcome, {{ user.firstname }}!</h1>
-        </div>  
+        </div>
         <section class="supermarket-list">
           <h2>Products 🛒</h2>
           <div class="product-list">
             <ul v-if="user">
               <li v-for="product in user.products" :key="product._id">
                 {{ product.name }} - {{ product.expiring_date }}
-                <select v-model="product.notification">
-                  <option disabled value="">Notify me before</option>
+                <select v-model="product.receiving_date">
+                  <option disabled value="Notify me before">Notify me before</option>
                   <option value="three_days">3 days</option>
                   <option value="week">1 week</option>
                   <option value="month">1 month</option>
                 </select>
-                <button class="delete-button" @click="removeProduct(product._id)">Delete</button>
+                <button class="delete-button" @click="removeProduct(product)">Delete</button>
               </li>
             </ul>
           </div>
@@ -50,7 +51,8 @@
         </form>
         <p v-if="message">{{ message }}</p>
       </div>
-      <ModalPage :isVisible="isModalVisible" :products="products" @close="isModalVisible = false" @remove-product="removeProductFromModal" @confirm="confirmExpiryDates">
+      <ModalPage :isVisible="isModalVisible" :products="products" @close="isModalVisible = false"
+        @remove-product="removeProductFromModal" @confirm="confirmExpiryDates">
       </ModalPage>
     </header>
   </body>
@@ -68,7 +70,8 @@ export default {
   components: {
     ModalPage
   },
-  setup() {
+  setup()
+  {
     const user = ref(store.user || JSON.parse(localStorage.getItem('user')));
     const selectedFile = ref(null);
     const message = ref('');
@@ -77,40 +80,51 @@ export default {
     const router = useRouter();
     const saveMessage = ref('');
 
-    watch(() => store.user, (newUser) => {
+    watch(() => store.user, (newUser) =>
+    {
       user.value = newUser;
-      if (newUser) {
+      if (newUser)
+      {
         localStorage.setItem('user', JSON.stringify(newUser));
       }
     });
 
-    const fetchUserProducts = async () => {
-      try {
+    const fetchUserProducts = async () =>
+    {
+      try
+      {
         const response = await axios.get(`http://localhost:3000/api/foodcare/get_user/${user.value._id}`);
-        if (response.data) {
+        if (response.data)
+        {
           store.setUser(response.data); // Actualizar el usuario en el almacén
         }
-      } catch (error) {
+      } catch (error)
+      {
         console.error('Error fetching user products:', error);
       }
     };
 
-    onMounted(() => {
-      if (user.value) {
+    onMounted(() =>
+    {
+      if (user.value)
+      {
         fetchUserProducts();
       }
     });
 
-    const onFileChange = async (event) => {
+    const onFileChange = async (event) =>
+    {
       const fileInput = event.target;
       const label = fileInput.previousElementSibling;
-      if (fileInput.files && fileInput.files.length > 0) {
+      if (fileInput.files && fileInput.files.length > 0)
+      {
         label.classList.add('selected');
         selectedFile.value = fileInput.files[0];
         const formData = new FormData();
         formData.append('image', selectedFile.value);
 
-        try {
+        try
+        {
           const response = await axios.post('http://localhost:3000/api/process_image', formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
@@ -123,18 +137,22 @@ export default {
             notification: ''
           }));
           isModalVisible.value = true;
-        } catch (error) {
+        } catch (error)
+        {
           console.error('Error processing image:', error);
           message.value = 'Error processing image';
         }
-      } else {
+      } else
+      {
         label.classList.remove('selected');
         selectedFile.value = null; // Reset
       }
     };
 
-    const confirmExpiryDates = async () => {
-      if (products.value.some(product => !product.expiring_date || !product.notification)) {
+    const confirmExpiryDates = async () =>
+    {
+      if (products.value.some(product => !product.expiring_date || !product.notification))
+      {
         message.value = 'Please enter expiring dates and notification time for all products';
         return;
       }
@@ -144,13 +162,16 @@ export default {
       await fetchUserProducts(); // Ensure products are up-to-date
     };
 
-    const uploadImage = async () => {
-      if (!selectedFile.value) {
+    const uploadImage = async () =>
+    {
+      if (!selectedFile.value)
+      {
         message.value = 'Please select an image file first';
         return;
       }
 
-      if (products.value.some(product => !product.expiring_date || !product.notification)) {
+      if (products.value.some(product => !product.expiring_date || !product.notification))
+      {
         message.value = 'Please enter expiring dates and notification time for all products';
         return;
       }
@@ -160,7 +181,8 @@ export default {
       formData.append('userId', user.value._id);
       formData.append('products', JSON.stringify(products.value));
 
-      try {
+      try
+      {
         await axios.post('http://localhost:3000/api/upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -168,46 +190,71 @@ export default {
         });
         message.value = 'Image and product data uploaded successfully';
         await fetchUserProducts();
-      } catch (error) {
+      } catch (error)
+      {
         console.error('Error uploading image:', error);
         message.value = 'Error uploading image';
       }
     };
 
-    const removeProduct = async (productId) => {
-      try {
-        const response = await axios.delete(`http://localhost:3000/api/foodcare/delete_product/${user.value._id}/${productId}`);
-        if (response.data) {
+    const removeProduct = async (product) =>
+    {
+      try
+      {
+        const response = await axios.delete(`http://localhost:3000/api/foodcare/delete_product`, { data: product });
+        if (response.data)
+        {
           await fetchUserProducts();
           message.value = 'Product removed successfully';
         }
-      } catch (error) {
+      } catch (error)
+      {
         console.error('Error removing product:', error);
         message.value = 'Error removing product';
       }
     };
 
-    const saveChanges = async () => {
-      try {
-        await axios.put(`http://localhost:3000/api/foodcare/update_products/${user.value._id}`, {
-          products: user.value.products
-        });
-        saveMessage.value = 'Changes saved successfully';
-        setTimeout(() => {
-          saveMessage.value = '';
-        }, 3000);
-        await fetchUserProducts();
-      } catch (error) {
+    const update_receiving_date = async () => 
+    {
+      try 
+      {
+        //i should get all the users Produkts
+        //save the update products in the user.products 
+        for (const product of user.value.products)
+        {
+          if (product.receiving_date == "three_days")
+          {
+            product.email_receiving_date = new Date(product.expiring_date);//einen wert instalisieren, weil es null war
+            product.email_receiving_date.setDate(new Date(product.expiring_date).getDate() - 3);
+          }
+          else if (product.receiving_date == "week")
+          {
+            product.email_receiving_date = new Date(product.expiring_date);
+            product.email_receiving_date.setDate(new Date(product.expiring_date).getDate() - 7);
+          }
+          else if (product.receiving_date == "month")
+          {
+            product.email_receiving_date = new Date(product.expiring_date);
+            product.email_receiving_date.setDate(new Date(product.expiring_date).getDate() - 30);
+          }
+        }
+
+        await axios.put(`http://localhost:3000/api/foodcare/update_products`, { data: user.value.products });
+        console.log("product email recving date: " + user.value.products[0].email_receiving_date);
+      } catch (error) 
+      {
         console.error('Error saving changes:', error);
         saveMessage.value = 'Error saving changes';
       }
     };
 
-    const cancelChanges = async () => {
+    const cancelChanges = async () =>
+    {
       await fetchUserProducts(); // Revert changes by re-fetching products from the server
     };
 
-    const navigateToLogout = () => {
+    const navigateToLogout = () =>
+    {
       store.setUser(null); // Limpiar el usuario en el almacén
       localStorage.removeItem('user'); // Remover usuario de localStorage
       router.push('/'); // Navegar a la página de bienvenida
@@ -224,7 +271,7 @@ export default {
       products,
       isModalVisible,
       removeProduct,
-      saveChanges,
+      saveChanges: update_receiving_date,
       cancelChanges,
       saveMessage
     };
@@ -242,7 +289,7 @@ export default {
   font-family: 'Rubik';
 }
 
-body{
+body {
   height: 100vh;
   width: 100%;
   display: flex;
@@ -287,10 +334,12 @@ header .navbar {
   display: flex;
   flex-wrap: wrap;
 }
-.navbar .logo{
+
+.navbar .logo {
   display: flex;
 }
-.navbar .logo img{
+
+.navbar .logo img {
   height: 48px;
   width: auto;
   margin-right: 3px;
@@ -470,6 +519,7 @@ button.delete-button:hover {
   background-color: #000;
   color: #fff;
 }
+
 /* While selected, for better user expirience */
 .custom-file-upload.selected {
   background-color: #2da852;
