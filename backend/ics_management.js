@@ -102,9 +102,8 @@ function get_date_obj(expiring_date)
   } else if (expiring_date.includes("."))
   {
     parts = expiring_date.split(".");
-  } 
-  else if (expiring_date.includes("-"))
-  {
+  }else if (expiring_date.includes("-"))
+  { 
     parts = expiring_date.split("-");
   }else
   {
