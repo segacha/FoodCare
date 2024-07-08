@@ -9,6 +9,7 @@
         <ul class="menu">
           <li><a href="#">Home</a></li>
           <li><router-link to="/shopping-list">Shop List</router-link></li>
+          <li><router-link to="/statistics">Statistics</router-link></li>
           <li><a href="#">Contact</a></li>
         </ul>
         <div class="buttons">

@@ -13,4 +13,3 @@ const product_schema = new mongoose.Schema({
 // Define the User model and export it
 const product = mongoose.model('product', product_schema,'Products');
 module.exports = product;
-

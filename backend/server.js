@@ -112,7 +112,7 @@ app.post('/api/process_image', upload.single('image'), async (req, res) => {
         {
           role: "user",
           content: [
-            { type: "text", text: "Return JSON document with data. Only return JSON not other text. Give only items as array in the JSON in which each items has a name, price." },
+            { type: "text", text: "Return JSON document with data. Only return JSON not other text. Give only items as array in the JSON in which each items has a name. Give me the total amount of money that the bill has cost as total amount of money." },
             {
               type: "image_url",
               image_url: {
@@ -129,12 +129,75 @@ app.post('/api/process_image', upload.single('image'), async (req, res) => {
     jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); // Filtrar el archivo JSON
     const jsonData = JSON.parse(jsonString);
 
+    if (jsonData.total) {
+      const totalAmount = jsonData.total; // Direkter Zugriff auf die Gesamtsumme
+      const purchaseDate = new Date();
+      const monthIndex = purchaseDate.getMonth();
+
+      await User.findByIdAndUpdate(userId, {
+        $inc: { [`monthlyExpenses.${monthIndex}`]: totalAmount }
+      });
+
+      console.log(`Total amount ${totalAmount} added to month ${monthIndex + 1}`);
+
+      res.send('Total amount added to the monthly expenses.');
+    } else {
+      console.error('jsonData does not contain total amount');
+      res.status(400).send('Invalid data: total amount not found');
+    }
+
     res.json(jsonData);
   } catch (error) {
     console.error('Error processing image:', error.response ? error.response.data : error.message);
     res.status(500).send('Internal Server Error');
   } finally {
     fs.unlinkSync(imagePath); // Borrar la foto después de usarla
+  }
+});
+
+// Agregar las rutas para manejar la lista de compras
+app.get('/api/user/:userId/shopping-list', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    res.json(user.shoppingList);
+  } catch (error) {
+    res.status(500).send('Server error');
+  }
+});
+
+app.post('/api/user/:userId/shopping-list', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    user.shoppingList = req.body.shoppingList;
+    await user.save();
+    res.send('Shopping list saved');
+  } catch (error) {
+    console.error('Error saving shopping list:', error); // Agregar este log
+    res.status(500).send('Server error');
+  }
+});
+
+app.delete('/api/user/:userId/shopping-list/:itemId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+
+    const itemId = req.params.itemId;
+    user.shoppingList = user.shoppingList.filter(item => item._id.toString() !== itemId);
+
+    await user.save();
+    res.send('Item removed from shopping list');
+  } catch (error) {
+    console.error('Error removing item from shopping list:', error);
+    res.status(500).send('Server error');
   }
 });
 

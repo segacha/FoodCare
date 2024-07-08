@@ -6,7 +6,12 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true }, //ref ist die obergen produkt
   data: { type: mongoose.Schema.Types.Mixed, ref: 'data' },
-  products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'product' }]
+  products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'product' }],
+  shoppingList: [{
+    name: { type: String, required: true },
+    quantity: { type: Number, required: true }
+  }],
+  monthlyExpenses: { type: [Number], default: Array(12).fill(0) } // Neues Feld für monatliche Ausgaben
 },{
   collection: 'users' // Especificar la colección
 });
