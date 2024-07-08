@@ -84,7 +84,7 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.post("http://localhost:3000/api/foodcare/create_user", this.registerUser);
+        const response = await axios.post("/foodcare/create_user", this.registerUser);
         const data = response.data;
         if (data.status) {
           alert('User registered successfully');
@@ -103,8 +103,7 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        const api_url = `http://localhost:3000/api/foodcare/get_user_by_email/${this.loginUser.email}`; 
-        const response = await axios.get(api_url);
+        const response = await axios.post("/foodcare/login", this.loginUser);
         const data = response.data;
         if (data.status) {
           alert('Login Successfully');
@@ -140,7 +139,7 @@ export default {
 
     registerBtn.addEventListener('click', this.switchToRegister);
     loginBtn.addEventListener('click', this.switchToLogin);
-  }
+  },
 };
 </script>
 

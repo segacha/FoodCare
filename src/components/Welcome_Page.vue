@@ -68,7 +68,7 @@ body{
 /*Glassmorphism*/
 header {
   height: 85vh;
-  width: 90%;
+  width: 70%;
   background: rgba(255, 255, 255, 0.1);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
   border-top: 1px solid rgba(255, 255, 255, 0.5);

@@ -1,5 +1,4 @@
 <template>
-
   <body>
     <header>
       <nav class="navbar">
@@ -21,17 +20,20 @@
           <h1>Welcome, {{ user.firstname }}!</h1>
         </div>
         <section class="supermarket-list">
-          <h2>Products 🛒</h2>
-          <div class="product-list">
+          <h2>Products on the watch 👀</h2>
+          <div class="product-list scrollable">
             <ul v-if="user">
               <li v-for="product in user.products" :key="product._id">
                 {{ product.name }} - {{ product.expiring_date }}
-                <select v-model="product.receiving_date">
-                  <option disabled value="Notify me before">Notify me before</option>
-                  <option value="three_days">3 days</option>
-                  <option value="week">1 week</option>
-                  <option value="month">1 month</option>
-                </select>
+                <div class="dropdown-container">
+                  <select v-model="product.receiving_date" class="styled-dropdown">
+                    <option disabled value="Notify  before">Notification Date</option>
+                    <option value="three_days">3 days before</option>
+                    <option value="week">1 week before</option>
+                    <option value="month">1 month before</option>
+                  </select>
+                  <span class="selected-value">{{ getDropdownLabel(product.receiving_date) }}</span>
+                </div>
                 <button class="delete-button" @click="removeProduct(product)">Delete</button>
               </li>
             </ul>
@@ -47,8 +49,9 @@
         <form @submit.prevent="uploadImage">
           <label for="file-upload" class="custom-file-upload">Upload Image</label>
           <input id="file-upload" type="file" @change="onFileChange" />
-          <button type="submit">Confirm Image</button>
+          <button type="submit" :disabled="isUploading">Confirm Image</button>
         </form>
+        <p v-if="isUploading">Uploading, please wait...</p> <!-- Loading message -->
         <p v-if="message">{{ message }}</p>
       </div>
       <ModalPage :isVisible="isModalVisible" :products="products" @close="isModalVisible = false"
@@ -79,6 +82,9 @@ export default {
     const isModalVisible = ref(false);
     const router = useRouter();
     const saveMessage = ref('');
+    const isUploading = ref(false); // Define isUploading here
+    const processedProducts = ref([]);
+
 
     watch(() => store.user, (newUser) =>
     {
@@ -101,6 +107,7 @@ export default {
       } catch (error)
       {
         console.error('Error fetching user products:', error);
+        message.value = 'Failed to load products. Please try again later.';
       }
     };
 
@@ -112,48 +119,48 @@ export default {
       }
     });
 
-    const onFileChange = async (event) =>
-    {
+    const onFileChange = async (event) => {
       const fileInput = event.target;
       const label = fileInput.previousElementSibling;
-      if (fileInput.files && fileInput.files.length > 0)
-      {
+      if (fileInput.files && fileInput.files.length > 0) {
         label.classList.add('selected');
         selectedFile.value = fileInput.files[0];
         const formData = new FormData();
         formData.append('image', selectedFile.value);
 
-        try
-        {
+        try {
+          isUploading.value = true;
           const response = await axios.post('http://localhost:3000/api/process_image', formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
           });
 
-          products.value = response.data.items.map(item => ({
+          processedProducts.value = response.data.items.map(item => ({
             name: item.name,
-            expiring_date: '',
-            notification: ''
+            expiring_date: ''
           }));
+          products.value = [...processedProducts.value]; // Show Products
           isModalVisible.value = true;
-        } catch (error)
-        {
-          console.error('Error processing image:', error);
-          message.value = 'Error processing image';
+        } catch (error) {
+          console.error('Error processing, reload and try again', error);
+          message.value = 'Error processing image, reload and try again';
+        }finally{
+          isUploading.value = false;
         }
-      } else
-      {
+      } else {
         label.classList.remove('selected');
         selectedFile.value = null; // Reset
       }
     };
 
+
+
     const confirmExpiryDates = async () =>
     {
-      if (products.value.some(product => !product.expiring_date || !product.notification))
+      if (products.value.some(product => !product.expiring_date))
       {
-        message.value = 'Please enter expiring dates and notification time for all products';
+        message.value = 'Please enter expiring dates for all products';
         return;
       }
       isModalVisible.value = false;
@@ -162,40 +169,37 @@ export default {
       await fetchUserProducts(); // Ensure products are up-to-date
     };
 
-    const uploadImage = async () =>
-    {
-      if (!selectedFile.value)
-      {
+    const uploadImage = async () => {
+      if (!selectedFile.value) {
         message.value = 'Please select an image file first';
         return;
       }
 
-      if (products.value.some(product => !product.expiring_date || !product.notification))
-      {
-        message.value = 'Please enter expiring dates and notification time for all products';
+      if (products.value.some(product => !product.expiring_date)) {
+        message.value = 'Please enter expiring dates for all products';
         return;
       }
 
       const formData = new FormData();
       formData.append('image', selectedFile.value);
       formData.append('userId', user.value._id);
-      formData.append('products', JSON.stringify(products.value));
+      formData.append('products', JSON.stringify(products.value)); // Use the processed products with expiring dates
 
-      try
-      {
+      try {
+
         await axios.post('http://localhost:3000/api/upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
-        message.value = 'Image and product data uploaded successfully';
+        message.value = 'Products data uploaded successfully';
         await fetchUserProducts();
-      } catch (error)
-      {
+      } catch (error) {
         console.error('Error uploading image:', error);
-        message.value = 'Error uploading image';
+        message.value = 'Error uploading image. Please try again.';
       }
-    };
+  };
+
 
     const removeProduct = async (product) =>
     {
@@ -241,6 +245,8 @@ export default {
 
         await axios.put(`http://localhost:3000/api/foodcare/update_products`, { data: user.value.products });
         console.log("product email recving date: " + user.value.products[0].email_receiving_date);
+        message.value = 'Successfully Updated!';
+
       } catch (error) 
       {
         console.error('Error saving changes:', error);
@@ -260,6 +266,23 @@ export default {
       router.push('/'); // Navegar a la página de bienvenida
     };
 
+    const getDropdownLabel = (value) => {
+      switch (value) {
+        case 'three_days':
+          return '';
+        case 'week':
+          return '';
+        case 'month':
+          return '';
+        default:
+          return 'Notify when?';
+      }
+    };
+
+    const removeProductFromModal = (index) => {
+      products.value.splice(index, 1);
+    };
+
     return {
       user,
       onFileChange,
@@ -273,7 +296,10 @@ export default {
       removeProduct,
       saveChanges: update_receiving_date,
       cancelChanges,
-      saveMessage
+      saveMessage,
+      isUploading,
+      getDropdownLabel,
+      removeProductFromModal
     };
   },
 };
@@ -418,9 +444,56 @@ header .content h1 {
   margin-bottom: 20px;
 }
 
-.product-list {
-  flex: 1;
+.scrollable {
+  max-height: 400px; /* Ajusta esta altura según tus necesidades */
   overflow-y: auto;
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #888 #f1f1f1; /* For Firefox */
+}
+
+.scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+  border: 2px solid #f1f1f1;
+}
+
+.scrollable::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+.dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.styled-dropdown {
+  appearance: none;
+  background: none;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.styled-dropdown:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.selected-value {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #555;
 }
 
 .supermarket-list ul {

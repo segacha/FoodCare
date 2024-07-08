@@ -7,11 +7,9 @@ const OpenAI = require('openai');
 require('dotenv').config();
 const User = require("../src/models/user/userModel.js");
 const Product = require("../src/models/Product/product.js");
-const auto_mailing_system = require("./auto_mailing_system.js");
 const ams = require("./AMS20.js");
-const { stringify } = require('querystring');
-const prompt = require('prompt-sync')();
-const axios = require('axios');
+const key = "123456789trytryrtry"; // Mantén la clave que ya declaraste
+const encryptor = require("simple-encryptor")(key);
 
 
 const app = express();
@@ -57,10 +55,9 @@ app.get("/", (req, res) =>
   res.send("Server is running");
 });
 
-// ChatGPT API, Upload der Foto
+
 app.post('/api/upload', upload.single('image'), async (req, res) => {
   const imagePath = req.file.path;
-  const base64Image = fs.readFileSync(imagePath).toString('base64'); // Leer y convertir a base64
   const userId = req.body.userId; // ID del usuario
   const products = req.body.products ? JSON.parse(req.body.products) : []; // Productos con fechas de caducidad
 
@@ -71,56 +68,29 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
   }
 
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Return JSON document with data. Only return JSON not other text. Give only items as array in the JSON in which each items has a name, price." },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/jpeg;base64,${base64Image}`,
-                detail: "low"
-              },
-            },
-          ],
-        },
-      ],
-    });
+    const user = await User.findById(userId);
 
-    let jsonString = response.choices[0].message.content;
-    jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); // Filtrar el archivo JSON
-    const jsonData = JSON.parse(jsonString);
+    if (!user) {
+      res.status(404).send('Usuario no encontrado');
+      return;
+    }
 
-    if (Array.isArray(jsonData.items)) {
-      const user = await User.findById(userId);
-
-      if (!user) {
-        res.status(404).send('Usuario no encontrado');
-        return;
-      }
-
-      const productPromises = jsonData.items.map(async (item, index) => {
-        const newProduct = new Product({
-          name: item.name,
-          preis: item.price,
-          expiring_date: products[index].expiring_date,
-        });
-
-        await newProduct.save();
-        user.products.push(newProduct._id);
-        return newProduct;
+    const productPromises = products.map(async (item) => {
+      const newProduct = new Product({
+        name: item.name,
+        preis: item.price,
+        expiring_date: item.expiring_date
       });
 
-      await Promise.all(productPromises);
-      await user.save();
+      await newProduct.save();
+      user.products.push(newProduct._id);
+      return newProduct;
+    });
 
-      res.send('Todos los productos se han guardado correctamente.');
-    } else {
-      res.status(400).send('Datos inválidos: se esperaba un array');
-    }
+    await Promise.all(productPromises);
+    await user.save();
+
+    res.send('Todos los productos se han guardado correctamente.');
   } catch (error) {
     console.error('Error processing image:', error.response ? error.response.data : error.message);
     res.status(500).send('Internal Server Error');
@@ -130,6 +100,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 });
 
 
+// ChatGPT API, Upload der Foto
 app.post('/api/process_image', upload.single('image'), async (req, res) => {
   const imagePath = req.file.path;
   const base64Image = fs.readFileSync(imagePath).toString('base64'); 
@@ -368,21 +339,21 @@ async function test()
  */
 }
 
-//GET USER LOGIN
-app.get('/api/foodcare/login/', async (req, res) => {
+//POST USER LOGIN
+app.post('/api/foodcare/login', async (req, res) => {
+  const { email, password } = req.body;
 
-  const key = "123456789trytryrtry";
-  const encryptor = require("simple-encryptor")(key);
-  const email = req.params.user_email;
   try {
-    const user = await User.findOne({ email }).populate('products').exec();
-    const password = user.password;
+    const user = await User.findOne({ email }).exec();
+
     if (!user) {
-      return res.status(404).send('We couldn\'t find a user with the given email!');
+      return res.status(404).send('User not found');
     }
+
     const decryptedPassword = encryptor.decrypt(user.password);
+
     if (decryptedPassword === password) {
-      res.send({ status: true, msg: "User validated successfully", user });
+      res.send({ status: true, user });
     } else {
       res.status(401).send('Invalid password');
     }
@@ -391,6 +362,7 @@ app.get('/api/foodcare/login/', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 //GET PRODUCT BY USE ID
 app.get('/api/foodcare/get_products/:userId', async (req, res) =>
