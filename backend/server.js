@@ -58,10 +58,19 @@ app.get("/", (req, res) =>
 app.post('/api/upload', upload.single('image'), async (req, res) => {
   const imagePath = req.file.path;
   const userId = req.body.userId;
-  const products = req.body.products ? JSON.parse(req.body.products) : []; // Products with expiring date
+  const products = req.body.products ? JSON.parse(req.body.products) : [];
+  const totalAmount = parseFloat(req.body.total_amount);
+
+  console.log('Received totalAmount:', totalAmount);
 
   if (!products || products.length === 0) {
     res.status(400).send('No products provided');
+    fs.unlinkSync(imagePath);
+    return;
+  }
+
+  if (isNaN(totalAmount)) {
+    res.status(400).send('No valid total amount provided');
     fs.unlinkSync(imagePath);
     return;
   }
@@ -70,9 +79,23 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      res.status(404).send('Usuario no encontrado');
+      res.status(404).send('User not found');
+      fs.unlinkSync(imagePath);
       return;
     }
+
+    const currentMonth = new Date().getMonth(); // Use zero-based index for months (0 = January, 11 = December)
+
+    console.log('Current Month Index:', currentMonth);
+
+    // Ensure monthlyTotals array exists and has 12 elements
+    if (!user.monthlyTotals || user.monthlyTotals.length !== 12) {
+      user.monthlyTotals = Array(12).fill(0);
+    }
+
+    user.monthlyTotals[currentMonth] += totalAmount;
+
+    console.log('Updated monthlyTotals:', user.monthlyTotals);
 
     const productPromises = products.map(async (item) => {
       const newProduct = new Product({
@@ -89,7 +112,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     await Promise.all(productPromises);
     await user.save();
 
-    res.send('Todos los productos se han guardado correctamente.');
+    res.send('Todos los productos y el total de la factura se han guardado correctamente.');
   } catch (error) {
     console.error('Error processing image:', error.response ? error.response.data : error.message);
     res.status(500).send('Internal Server Error');
@@ -97,7 +120,6 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     fs.unlinkSync(imagePath);
   }
 });
-
 
 // ChatGPT API, Process of the Image
 app.post('/api/process_image', upload.single('image'), async (req, res) => {
@@ -111,7 +133,7 @@ app.post('/api/process_image', upload.single('image'), async (req, res) => {
         {
           role: "user",
           content: [
-            { type: "text", text: "Return JSON document with data. Only return JSON not other text. Give only items as array in the JSON in which each items has a name, price." },
+            { type: "text", text: "Return JSON document with data. Only return JSON not other text. Give only items as array in the JSON in which each items has a name and give me the total amount of the bill."},
             {
               type: "image_url",
               image_url: {
@@ -134,6 +156,20 @@ app.post('/api/process_image', upload.single('image'), async (req, res) => {
     res.status(500).send('Internal Server Error');
   } finally {
     fs.unlinkSync(imagePath); // Delete the Image after using it
+  }
+});
+
+//GET Expenses of the month
+app.get('/api/user/:userId/monthly-totals', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    res.json(user.monthlyTotals);
+  } catch (error) {
+    console.error('Error fetching monthly totals:', error);
+    res.status(500).send('Server error');
   }
 });
 

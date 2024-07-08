@@ -9,7 +9,7 @@
         <ul class="menu">
           <li><a href="#">Home</a></li>
           <li><router-link to="/shopping-list">Shop List</router-link></li>
-          <li><a href="#">Contact</a></li>
+          <li><router-link to="/chart">Charts</router-link></li>
         </ul>
         <div class="buttons">
           <input type="button" value="LogOut" @click="navigateToLogout" />
@@ -22,11 +22,9 @@
         <section class="supermarket-list">
           <h2>Products on the watch 👀</h2>
           <div class="product-list scrollable">
-            <!--Show Products in store in the user-->
             <ul v-if="user">
               <li v-for="product in user.products" :key="product._id">
-                {{ product.name }} - {{ product.expiring_date }}
-                <!--Email Receiving Date Input-->
+                {{ product.name }}: {{ product.expiring_date }}
                 <div class="dropdown-container">
                   <select v-model="product.receiving_date" class="styled-dropdown">
                     <option disabled value="Notify  before">Notification Date</option>
@@ -56,7 +54,6 @@
         <p v-if="isUploading">Uploading, please wait...</p>
         <p v-if="message">{{ message }}</p>
       </div>
-      <!--Modal window that will apear to get expiring date of each product-->
       <ModalPage :isVisible="isModalVisible" :products="products" @close="isModalVisible = false"
         @remove-product="removeProductFromModal" @confirm="confirmExpiryDates">
       </ModalPage>
@@ -87,8 +84,8 @@ export default {
     const saveMessage = ref('');
     const isUploading = ref(false);
     const processedProducts = ref([]);
+    const totalprice = ref();
 
-    //To Update the Products in the Frontend after being confirm by the user
     watch(() => store.user, (newUser) =>
     {
       user.value = newUser;
@@ -97,7 +94,7 @@ export default {
         localStorage.setItem('user', JSON.stringify(newUser));
       }
     });
-    //Help to keep the user in the Page even if the page reloads
+
     const fetchUserProducts = async () =>
     {
       try
@@ -122,7 +119,6 @@ export default {
       }
     });
 
-    //Call ChatGPT API and input of the expiration dates
     const onFileChange = async (event) => 
     {
       const fileInput = event.target;
@@ -141,11 +137,17 @@ export default {
             },
           });
 
+          console.log(response.data)//DEBUGGING
           processedProducts.value = response.data.items.map(item => ({
             name: item.name,
             expiring_date: ''
           }));
-          products.value = [...processedProducts.value]; // Show Products
+
+          const keys = Object.keys(response.data)
+          products.value = [...processedProducts.value];
+          if(keys[1] == 'total') {totalprice.value = response.data.total}
+          else{ totalprice.value = response.data.total_amount} 
+
           isModalVisible.value = true;
         } catch (error) {
           console.error('Error processing, reload and try again', error);
@@ -160,7 +162,6 @@ export default {
     };
 
     const confirmExpiryDates = async () =>
-    //Checking that all Products have a expiry date
     {
       if (products.value.some(product => !product.expiring_date))
       {
@@ -168,8 +169,8 @@ export default {
         return;
       }
       isModalVisible.value = false;
-      user.value.products = [...user.value.products, ...products.value]; // Update products in the user object
-      await fetchUserProducts(); //Updates the data
+      user.value.products = [...user.value.products, ...products.value];
+      await fetchUserProducts();
     };
 
     const uploadImage = async () => 
@@ -187,7 +188,9 @@ export default {
       const formData = new FormData();
       formData.append('image', selectedFile.value);
       formData.append('userId', user.value._id);
-      formData.append('products', JSON.stringify(products.value)); // Use the processed products with expiring dates
+      formData.append('products', JSON.stringify(products.value));
+      formData.append('total_amount', totalprice.value); // Include total_amount in the form data
+      console.log(totalprice.value)//DEBUGGING
 
       try {
         await axios.post('http://localhost:3000/api/upload', formData, {
@@ -202,7 +205,6 @@ export default {
         message.value = 'Error uploading image. Please try again.';
       }
     };
-
 
     const removeProduct = async (product) =>
     {
@@ -225,12 +227,11 @@ export default {
     {
       try 
       {
-        //Save the update products in the user.products 
         for (const product of user.value.products)
         {
           if (product.receiving_date == "three_days")
           {
-            product.email_receiving_date = new Date(product.expiring_date);//einen wert instalisieren, weil es null war
+            product.email_receiving_date = new Date(product.expiring_date);
             product.email_receiving_date.setDate(new Date(product.expiring_date).getDate() - 3);
           }
           else if (product.receiving_date == "week")
@@ -258,7 +259,7 @@ export default {
 
     const cancelChanges = async () =>
     {
-      await fetchUserProducts(); // Revert changes by re-fetching products from the server
+      await fetchUserProducts();
     };
 
     const navigateToLogout = () =>
@@ -268,7 +269,6 @@ export default {
       router.push('/'); 
     };
 
-    //There where problems with different text that why they dont have returns. But it for the default tho
     const getDropdownLabel = (value) => 
     {
       switch (value) {
@@ -283,7 +283,6 @@ export default {
       }
     };
 
-    //Detele item before being in the data base
     const removeProductFromModal = (index) => 
     {
       products.value.splice(index, 1);
@@ -310,6 +309,11 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* Include your styles here */
+</style>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');

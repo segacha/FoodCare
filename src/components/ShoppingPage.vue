@@ -9,7 +9,7 @@
       <ul class="menu">
         <li><router-link to="/home">Home</router-link></li>
         <li><router-link to="/shopping-list">Shop List</router-link></li>
-        <li><router-link to="/contact">Contact</router-link></li>
+        <li><router-link to="/chart">Charts</router-link></li>
       </ul>
       <div class="buttons">
         <input type="button" value="LogOut" @click="navigateToLogout"/>
