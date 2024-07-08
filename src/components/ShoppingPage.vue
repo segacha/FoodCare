@@ -7,7 +7,6 @@
         <a href="#">FoodCare</a>
       </div>
       <ul class="menu">
-        <li><router-link to="/login">Login</router-link></li>
         <li><router-link to="/home">Home</router-link></li>
         <li><router-link to="/shopping-list">Shop List</router-link></li>
         <li><router-link to="/contact">Contact</router-link></li>
@@ -100,9 +99,9 @@ export default {
     };
 
     const navigateToLogout = () => {
-      store.setUser(null); // Limpiar el usuario en el almacén
-      localStorage.removeItem('user'); // Remover usuario de localStorage
-      useRouter().push('/'); // Navegar a la página de bienvenida
+      store.setUser(null);
+      localStorage.removeItem('user');
+      useRouter().push('/');
     };
 
     watch(() => store.user, (newUser) => {

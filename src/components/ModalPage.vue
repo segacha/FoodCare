@@ -63,8 +63,8 @@ export default {
   padding: 30px;
   width: 80%;
   max-width: 500px;
-  max-height: 40vh; /* Limitar la altura máxima del modal */
-  overflow-y: auto; /* Habilitar el desplazamiento vertical */
+  max-height: 40vh;
+  overflow-y: auto;
   text-align: center;
   position: relative;
 }
@@ -87,7 +87,7 @@ export default {
   font-size: 16px;
   color: #000;
   margin-right: 10px;
-  flex: 1; /* Para distribuir el espacio disponible */
+  flex: 1;
 }
 
 .modal-content input[type="date"] {
@@ -96,7 +96,7 @@ export default {
   border-radius: 5px;
   border: 1px solid #ccc;
   font-size: 16px;
-  flex: 1; /* Para distribuir el espacio disponible */
+  flex: 1;
 }
 
 .confirm-button {

@@ -10,8 +10,7 @@ const userSchema = new mongoose.Schema({
   shoppingList: [{
     name: { type: String, required: true },
     quantity: { type: Number, required: true }
-  }],
-  monthlyExpenses: { type: [Number], default: Array(12).fill(0) } // Neues Feld für monatliche Ausgaben
+  }]
 },{
   collection: 'users' // Especificar la colección
 });

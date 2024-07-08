@@ -9,7 +9,6 @@
         <ul class="menu">
           <li><a href="#">Home</a></li>
           <li><router-link to="/shopping-list">Shop List</router-link></li>
-          <li><router-link to="/statistics">Statistics</router-link></li>
           <li><a href="#">Contact</a></li>
         </ul>
         <div class="buttons">
@@ -23,9 +22,11 @@
         <section class="supermarket-list">
           <h2>Products on the watch 👀</h2>
           <div class="product-list scrollable">
+            <!--Show Products in store in the user-->
             <ul v-if="user">
               <li v-for="product in user.products" :key="product._id">
                 {{ product.name }} - {{ product.expiring_date }}
+                <!--Email Receiving Date Input-->
                 <div class="dropdown-container">
                   <select v-model="product.receiving_date" class="styled-dropdown">
                     <option disabled value="Notify  before">Notification Date</option>
@@ -52,9 +53,10 @@
           <input id="file-upload" type="file" @change="onFileChange" />
           <button type="submit" :disabled="isUploading">Confirm Image</button>
         </form>
-        <p v-if="isUploading">Uploading, please wait...</p> <!-- Loading message -->
+        <p v-if="isUploading">Uploading, please wait...</p>
         <p v-if="message">{{ message }}</p>
       </div>
+      <!--Modal window that will apear to get expiring date of each product-->
       <ModalPage :isVisible="isModalVisible" :products="products" @close="isModalVisible = false"
         @remove-product="removeProductFromModal" @confirm="confirmExpiryDates">
       </ModalPage>
@@ -83,10 +85,10 @@ export default {
     const isModalVisible = ref(false);
     const router = useRouter();
     const saveMessage = ref('');
-    const isUploading = ref(false); // Define isUploading here
+    const isUploading = ref(false);
     const processedProducts = ref([]);
 
-
+    //To Update the Products in the Frontend after being confirm by the user
     watch(() => store.user, (newUser) =>
     {
       user.value = newUser;
@@ -95,7 +97,7 @@ export default {
         localStorage.setItem('user', JSON.stringify(newUser));
       }
     });
-
+    //Help to keep the user in the Page even if the page reloads
     const fetchUserProducts = async () =>
     {
       try
@@ -103,7 +105,7 @@ export default {
         const response = await axios.get(`http://localhost:3000/api/foodcare/get_user/${user.value._id}`);
         if (response.data)
         {
-          store.setUser(response.data); // Actualizar el usuario en el almacén
+          store.setUser(response.data);
         }
       } catch (error)
       {
@@ -120,7 +122,9 @@ export default {
       }
     });
 
-    const onFileChange = async (event) => {
+    //Call ChatGPT API and input of the expiration dates
+    const onFileChange = async (event) => 
+    {
       const fileInput = event.target;
       const label = fileInput.previousElementSibling;
       if (fileInput.files && fileInput.files.length > 0) {
@@ -151,13 +155,12 @@ export default {
         }
       } else {
         label.classList.remove('selected');
-        selectedFile.value = null; // Reset
+        selectedFile.value = null;
       }
     };
 
-
-
     const confirmExpiryDates = async () =>
+    //Checking that all Products have a expiry date
     {
       if (products.value.some(product => !product.expiring_date))
       {
@@ -165,12 +168,12 @@ export default {
         return;
       }
       isModalVisible.value = false;
-      // Update products in the user object
-      user.value.products = [...user.value.products, ...products.value];
-      await fetchUserProducts(); // Ensure products are up-to-date
+      user.value.products = [...user.value.products, ...products.value]; // Update products in the user object
+      await fetchUserProducts(); //Updates the data
     };
 
-    const uploadImage = async () => {
+    const uploadImage = async () => 
+    {
       if (!selectedFile.value) {
         message.value = 'Please select an image file first';
         return;
@@ -187,7 +190,6 @@ export default {
       formData.append('products', JSON.stringify(products.value)); // Use the processed products with expiring dates
 
       try {
-
         await axios.post('http://localhost:3000/api/upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -199,7 +201,7 @@ export default {
         console.error('Error uploading image:', error);
         message.value = 'Error uploading image. Please try again.';
       }
-  };
+    };
 
 
     const removeProduct = async (product) =>
@@ -223,8 +225,7 @@ export default {
     {
       try 
       {
-        //i should get all the users Produkts
-        //save the update products in the user.products 
+        //Save the update products in the user.products 
         for (const product of user.value.products)
         {
           if (product.receiving_date == "three_days")
@@ -262,12 +263,14 @@ export default {
 
     const navigateToLogout = () =>
     {
-      store.setUser(null); // Limpiar el usuario en el almacén
-      localStorage.removeItem('user'); // Remover usuario de localStorage
-      router.push('/'); // Navegar a la página de bienvenida
+      store.setUser(null); 
+      localStorage.removeItem('user');
+      router.push('/'); 
     };
 
-    const getDropdownLabel = (value) => {
+    //There where problems with different text that why they dont have returns. But it for the default tho
+    const getDropdownLabel = (value) => 
+    {
       switch (value) {
         case 'three_days':
           return '';
@@ -280,7 +283,9 @@ export default {
       }
     };
 
-    const removeProductFromModal = (index) => {
+    //Detele item before being in the data base
+    const removeProductFromModal = (index) => 
+    {
       products.value.splice(index, 1);
     };
 
@@ -446,10 +451,10 @@ header .content h1 {
 }
 
 .scrollable {
-  max-height: 400px; /* Ajusta esta altura según tus necesidades */
+  max-height: 400px;
   overflow-y: auto;
-  scrollbar-width: thin; /* For Firefox */
-  scrollbar-color: #888 #f1f1f1; /* For Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
 }
 
 .scrollable::-webkit-scrollbar {
@@ -623,6 +628,7 @@ button.delete-button:hover {
   transform: scale(0.97);
 }
 
+/*Responsive parts*/
 @media (max-width: 850px) {
   header .navbar {
     flex-direction: column;

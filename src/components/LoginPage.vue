@@ -1,5 +1,6 @@
 <template>
   <body>
+    <!-- Link to get the Icons of the Pages -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <div class="container" id="container">
     <!-- Sign up -->
@@ -58,7 +59,7 @@
 import axios from 'axios';
 import { store } from '../store';
 
-axios.defaults.baseURL = 'http://localhost:3000/api'; // Asegúrate de cambiar esto a la URL de tu backend
+axios.defaults.baseURL = 'http://localhost:3000/api';
 
 export default {
   name: 'AuthPage',
@@ -75,12 +76,12 @@ export default {
         password: ''
       },
       loading: false,
-      error: null,
-      switch_to_home_page: false
+      error: null
     };
   },
   methods: {
-    async register() {
+    async register() 
+    {
       this.loading = true;
       this.error = null;
       try {
@@ -99,7 +100,8 @@ export default {
         this.loading = false;
       }
     },
-    async login() {
+    async login() 
+    {
       this.loading = true;
       this.error = null;
       try {
@@ -108,10 +110,10 @@ export default {
         if (data.status) {
           alert('Login Successfully');
           
-          // Guardar usuario en localStorage
+          // Save User in the localStorage
           localStorage.setItem('user', JSON.stringify(data.user));
           
-          store.setUser(data.user); // Guardar usuario en el store
+          store.setUser(data.user); //Save in the Store
 
           this.$router.push('/home');
         } else {
@@ -124,16 +126,19 @@ export default {
         this.loading = false;
       }
     },
-    switchToLogin() {
+    switchToLogin() 
+    {
       const container = document.getElementById('container');
       container.classList.remove('active');
     },
-    switchToRegister() {
+    switchToRegister() 
+    {
       const container = document.getElementById('container');
       container.classList.add('active');
     }
   },
-  mounted() {
+  mounted() 
+  {
     const registerBtn = document.getElementById('register');
     const loginBtn = document.getElementById('login');
 
@@ -257,6 +262,7 @@ body{
     z-index: 5;
     animation: move 0,7s;
 }
+/* Animation functions */
 @keyframes move{
     0%, 49.99%{
         z-index: 1;

@@ -10,7 +10,7 @@ let products_will_expire = []
 function get_date_obj(expiring_date) 
 {
     let parts;
-    //checking for ',' and '.'
+    //checking for ',', '-' and '.'
     if (expiring_date.includes(","))
     {
         parts = expiring_date.split(",");
@@ -172,7 +172,7 @@ async function send_email(user, user_products_list)
         });
         await transporter.sendMail(mail_option);
 
-        //we delte the file after we send it in the email
+        //we delete the file after we send it in the email
         await ics_management.delete_ics_file();
 
         console.log('EMAIL WAS SUCCESSFULLY SEND!!');

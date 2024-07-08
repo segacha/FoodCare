@@ -8,8 +8,7 @@ require('dotenv').config();
 const User = require("../src/models/user/userModel.js");
 const Product = require("../src/models/Product/product.js");
 const ams = require("./AMS20.js");
-const key = "123456789trytryrtry"; // Mantén la clave que ya declaraste
-const encryptor = require("simple-encryptor")(key);
+const encryptor = require("simple-encryptor")(process.env.ENCRYPTION_KEY);
 
 
 const app = express();
@@ -18,7 +17,7 @@ mongoose.set("strictQuery", false);
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-//MongoDB Connection
+// MongoDB Connection
 mongoose
   .connect("mongodb+srv://foodcare:webtech2@foodcare.gygzrc9.mongodb.net/foodcaredb", {
   })
@@ -31,7 +30,7 @@ mongoose
     console.error("Database cannot be Connected", error);
   });
 
-// Multer bearbeitet das Upload von dem Foto
+// Multer helps to process the image.
 const storage = multer.diskStorage({
   destination: function (req, file, cb)
   {
@@ -55,7 +54,7 @@ app.get("/", (req, res) =>
   res.send("Server is running");
 });
 
-
+// POST Products with expiration dates
 app.post('/api/upload', upload.single('image'), async (req, res) => {
   const imagePath = req.file.path;
   const userId = req.body.userId; // ID del usuario
@@ -100,7 +99,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 });
 
 
-// ChatGPT API, Upload der Foto
+// ChatGPT API, Process of the Image
 app.post('/api/process_image', upload.single('image'), async (req, res) => {
   const imagePath = req.file.path;
   const base64Image = fs.readFileSync(imagePath).toString('base64'); 
@@ -112,7 +111,7 @@ app.post('/api/process_image', upload.single('image'), async (req, res) => {
         {
           role: "user",
           content: [
-            { type: "text", text: "Return JSON document with data. Only return JSON not other text. Give only items as array in the JSON in which each items has a name. Give me the total amount of money that the bill has cost as total amount of money." },
+            { type: "text", text: "Return JSON document with data. Only return JSON not other text. Give only items as array in the JSON in which each items has a name, price." },
             {
               type: "image_url",
               image_url: {
@@ -129,23 +128,6 @@ app.post('/api/process_image', upload.single('image'), async (req, res) => {
     jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); // Filtrar el archivo JSON
     const jsonData = JSON.parse(jsonString);
 
-    if (jsonData.total) {
-      const totalAmount = jsonData.total; // Direkter Zugriff auf die Gesamtsumme
-      const purchaseDate = new Date();
-      const monthIndex = purchaseDate.getMonth();
-
-      await User.findByIdAndUpdate(userId, {
-        $inc: { [`monthlyExpenses.${monthIndex}`]: totalAmount }
-      });
-
-      console.log(`Total amount ${totalAmount} added to month ${monthIndex + 1}`);
-
-      res.send('Total amount added to the monthly expenses.');
-    } else {
-      console.error('jsonData does not contain total amount');
-      res.status(400).send('Invalid data: total amount not found');
-    }
-
     res.json(jsonData);
   } catch (error) {
     console.error('Error processing image:', error.response ? error.response.data : error.message);
@@ -155,7 +137,7 @@ app.post('/api/process_image', upload.single('image'), async (req, res) => {
   }
 });
 
-// Agregar las rutas para manejar la lista de compras
+// GET User Shopping List
 app.get('/api/user/:userId/shopping-list', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -168,6 +150,7 @@ app.get('/api/user/:userId/shopping-list', async (req, res) => {
   }
 });
 
+// POST Shopping List
 app.post('/api/user/:userId/shopping-list', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -178,11 +161,12 @@ app.post('/api/user/:userId/shopping-list', async (req, res) => {
     await user.save();
     res.send('Shopping list saved');
   } catch (error) {
-    console.error('Error saving shopping list:', error); // Agregar este log
+    console.error('Error saving shopping list:', error);
     res.status(500).send('Server error');
   }
 });
 
+//DELETE Item in the Shopping List
 app.delete('/api/user/:userId/shopping-list/:itemId', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -280,7 +264,7 @@ app.get('/api/foodcare/get_user_by_email/:user_email', async (req, res) =>
   }
 });
 
-//einen beispiel wie man diesem api, in der test() func zu sehen.
+//DELETE PRODUCT
 app.delete('/api/foodcare/delete_product/', async (req, res) =>
 {
   //console.log("body is: " + req)
@@ -306,6 +290,7 @@ app.delete('/api/foodcare/delete_product/', async (req, res) =>
   }
 });
 
+//UPDATE DATE TO GET RECEIVE MAIL
 app.put('/api/foodcare/update_products/', async (req, res) =>
   {
     try
@@ -330,77 +315,7 @@ app.put('/api/foodcare/update_products/', async (req, res) =>
       console.error('es gab problemen als wir die produkten update machen wollten:\n', error);
       res.status(500).send('Internal Server Error');
     }
-  });
-  
-
-//test();
-async function test()
-{
-  const product =//668559319647b2b1e799027f
-  {
-    name: "one month food",
-    preis: "99,99",
-    expiring_date: "2024-12-15",
-    receiving_date: "month",
-    email_receiving_date: null
-  };
-  const product2 =//668558c1f169860cab23c9c4
-  {
-    name: "one week food",
-    preis: "99,99",
-    expiring_date: "10.07.2024",
-    receiving_date: "week",
-    email_receiving_date: null
-  };
-
-  const product3 =//668558f2f9e185ccf74990cd
-  {
-    name: "three days food",
-    preis: "99,99",
-    expiring_date: "06.07.2024",
-    receiving_date: "three_days",
-    email_receiving_date: null
-  };
-
-  /**so sollte einen produkt spaeter im fortend gespeichert */
-
-  /**ich glaube wir sollen 'get_date_object' in fortend implementieren */
-  date_obj = ams.get_date_obj(product.expiring_date);
-  product.email_receiving_date = new Date(date_obj);
-
-  /**hier wir haben "-30" weil der user 30 tage vor der datumablauf einen email bekommen
-   * hatte er 'eine woche davor' ausgeaehlt, dann sollte "-7"
-   * und wenn drei tage davor dann sollte "-3"
-   */
-  //product.email_receiving_date.setDate(date_obj.getDate() - 30);
-  //console.log("date product rechieving date = " + (product.email_receiving_date));
-
-  /**fuer testing habe ich diesem user ausgesucht, um die produkt bei ihm zu speichern */
-  //const user = await User.findById("668acf1baaff909a7cb348c9").exec();
-  //if (!user)
-  //{
-  //  return res.status(404).send('We couldn\'t find a user with this ID!');
-  //}
-//
-  ///**prodkte in DB speichern */
-  //const new_product = new Product(product);
-  //await new_product.save();
-  //console.log("we add a new prodcut to the db: " + new_product._id);
-//
-  //user.products.push(new_product._id);
-  //await user.save();
-  //console.log("the product is added to the user!")
-
-  /**loeschen einen produkt */
-  /* const product = await Product.findById("6668543f02160a5e9317affe");
-  if (!product)
-  {
-    console.log("we didnt find the product..");
-    return;
-  }
-  const response = await axios.delete("http://localhost:3000/api/foodcare/delete_product", { data: product });
- */
-}
+});
 
 //POST USER LOGIN
 app.post('/api/foodcare/login', async (req, res) => {
@@ -425,7 +340,6 @@ app.post('/api/foodcare/login', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
 
 //GET PRODUCT BY USE ID
 app.get('/api/foodcare/get_products/:userId', async (req, res) =>
@@ -471,7 +385,7 @@ app.post('/api/foodcare/add_product/:userId', async (req, res) =>
   }
 });
 
-//Automating mail system checking the expiring date of all the Products
+//AMS checking the expiring date of all the Products
 //auto_mailing_system.daily_expiring_date_checks();
 ams.daily_expiring_date_checks();
 
@@ -487,18 +401,3 @@ app.listen(PORT, () =>
 {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-
-//TEST
-//delete_products()
-async function delete_products()
-{
-  try
-  {
-    await Product.deleteMany();
-    console.log('Products with empty expiring_date deleted successfully');
-  } catch (err)
-  {
-    console.error(err);
-  }
-
-}
