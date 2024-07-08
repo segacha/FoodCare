@@ -54,11 +54,11 @@ app.get("/", (req, res) =>
   res.send("Server is running");
 });
 
-// POST Products with expiration dates
+// POST Products with expiring dates
 app.post('/api/upload', upload.single('image'), async (req, res) => {
   const imagePath = req.file.path;
-  const userId = req.body.userId; // ID del usuario
-  const products = req.body.products ? JSON.parse(req.body.products) : []; // Productos con fechas de caducidad
+  const userId = req.body.userId;
+  const products = req.body.products ? JSON.parse(req.body.products) : []; // Products with expiring date
 
   if (!products || products.length === 0) {
     res.status(400).send('No products provided');
@@ -125,7 +125,7 @@ app.post('/api/process_image', upload.single('image'), async (req, res) => {
     });
 
     let jsonString = response.choices[0].message.content;
-    jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); // Filtrar el archivo JSON
+    jsonString = jsonString.replace(/```json\n/, '').replace(/\n```/, ''); //Filter the JSON response
     const jsonData = JSON.parse(jsonString);
 
     res.json(jsonData);
@@ -133,7 +133,7 @@ app.post('/api/process_image', upload.single('image'), async (req, res) => {
     console.error('Error processing image:', error.response ? error.response.data : error.message);
     res.status(500).send('Internal Server Error');
   } finally {
-    fs.unlinkSync(imagePath); // Borrar la foto después de usarla
+    fs.unlinkSync(imagePath); // Delete the Image after using it
   }
 });
 
@@ -281,7 +281,7 @@ app.delete('/api/foodcare/delete_product/', async (req, res) =>
     console.log("the deleted product name is: " + product.name)
 
     res.send({ status: true, msg: "product is successfully deleted" })
-    console.log("PRODUCT GOT DELTED")
+    console.log("PRODUCT GOT DELETED")
 
   } catch (error)
   {
@@ -303,8 +303,8 @@ app.put('/api/foodcare/update_products/', async (req, res) =>
       //    console.log(JSON.stringify(product));
       //  }
       const updated_products = await Promise.all(
-        products.data.map(async (product) => {//wir mach for each loop
-          return await Product.findByIdAndUpdate(product._id, { email_receiving_date: product.email_receiving_date }, { new: true });//true hier um nur die geupdatete produkte zurueck zu geben
+        products.data.map(async (product) => {
+          return await Product.findByIdAndUpdate(product._id, { email_receiving_date: product.email_receiving_date }, { new: true });//true only to give the updated products.
         })
       );
       console.log("products are updated now!")
