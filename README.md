@@ -26,7 +26,7 @@ npm install fs --save
 
 npm install dotenv --save
 
-npm install prompt --save
+npm install chart.js --save
 ```
 ### Compiles and hot-reloads for development
 ```

@@ -133,7 +133,7 @@ app.post('/api/process_image', upload.single('image'), async (req, res) => {
         {
           role: "user",
           content: [
-            { type: "text", text: "Return JSON document with data. Only return JSON not other text. Give only items as array in the JSON in which each items has a name and give me the total amount of the bill."},
+            { type: "text", text: "Return JSON document with data. Only return JSON not other text. Give only items as array in the JSON in which each items has a name and give me the total_amount of the bill."},
             {
               type: "image_url",
               image_url: {
@@ -332,15 +332,10 @@ app.put('/api/foodcare/update_products/', async (req, res) =>
     try
     {
       const products = req.body;
-      //console.log("the prod are: " + JSON.stringify(products));
-      //for(const product of products.date)
-      //  {
-      //    console.log("the loop");
-      //    console.log(JSON.stringify(product));
-      //  }
+      console.log("the prod are: " + JSON.stringify(products));
       const updated_products = await Promise.all(
         products.data.map(async (product) => {
-          return await Product.findByIdAndUpdate(product._id, { email_receiving_date: product.email_receiving_date }, { new: true });//true only to give the updated products.
+          return await Product.findByIdAndUpdate(product._id, { email_receiving_date: product.email_receiving_date, receiving_date: product.receiving_date }, { new: true });//true only to give the updated products.
         })
       );
       console.log("products are updated now!")
