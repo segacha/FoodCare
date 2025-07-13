@@ -1,8 +1,8 @@
-# 🥦 FoodCare – Smart Food Management
+# FoodCare – Smart Food Management
 
 **FoodCare** is a web application developed as part of the *Web Technologies 2* course at Hochschule Bochum. The project aims to help reduce **household food waste** through intelligent grocery tracking and expiration reminders.
 
-## 🌍 About the Project
+## About the Project
 
 FoodCare allows users to create an account, upload a photo of a **supermarket receipt**, and automatically extract purchased items using the **OpenAI ChatGPT API**. Users can then assign expiration dates to each item, and receive timely email alerts before their food goes bad.
 
@@ -30,13 +30,13 @@ FoodCare allows users to create an account, upload a photo of a **supermarket re
 
 ## ⚙️ Installation & Setup
 
-### 📦 Requirements
+### Requirements
 
 - Node.js and npm installed
 - MongoDB installed and running locally or remotely
 - An OpenAI API key (added to a `.env` file)
 
-### 🔧 Steps
+###  Steps
 
 1. **Clone the repository:**
 
